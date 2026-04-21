@@ -1,591 +1,1776 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#6366f1" />
-    <link rel="icon" href="icons/icon-192x192-A.png" type="image/png" />
-    <link rel="manifest" href="manifest.json">
-    <title>TaskFlow - Kelola Tugas Anda</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#f4a5b0"/>
+  <meta name="description" content="BLOOMY - Aplikasi edukasi pubertas untuk remaja perempuan"/>
+  <title>BLOOMY - Tumbuh Bersama</title>
+  <link rel="icon" href="icons/bloomy-new.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --rose:#f4a5b0;--rose-dark:#e07f90;--rose-deeper:#c45f72;--rose-light:#fdeef1;--rose-bg:#fff5f7;
+      --peach:#f9c784;--peach-light:#fef6e8;
+      --sage:#a8c5a0;--sage-dark:#7aaa70;--sage-deeper:#4e8a44;--sage-light:#eef5ec;
+      --lavender:#c9b8e8;--lavender-dark:#a08ece;--lavender-deeper:#7a5cb8;--lavender-light:#f3effc;
+      --cream:#fdf6f0;--cream-dark:#f0e6d8;--cream-mid:#e8d5c4;
+      --text-dark:#3d2c2c;--text-mid:#7a5c5c;--text-light:#b09090;--text-faint:#d4b8b8;
+      --white:#ffffff;
+      --shadow:0 4px 24px rgba(180,100,120,0.13);
+      --shadow-sm:0 2px 12px rgba(180,100,120,0.09);
+      --shadow-xs:0 1px 6px rgba(180,100,120,0.07);
+      --radius:16px;--radius-sm:10px;--radius-full:100px;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark);min-height:100vh;overflow-x:hidden;}
 
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --bg-dark: #ffffff;
-            --bg-card: #1e293b;
-            --text-light: #f8fafc;
-            --text-gray: #cbd5e1;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
+    /* ===== SCREENS ===== */
+    .screen{display:none;min-height:100vh;}
+    .screen.active{display:block;}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1856bb 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
+    /* ===== LOADING ===== */
+    #loading-screen{
+      position:fixed;inset:0;z-index:9999;
+      background:linear-gradient(160deg,#fff5f7 0%,#f3effc 50%,#eef5ec 100%);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      transition:opacity 0.6s ease;
+    }
+    .loading-petals{position:relative;width:100px;height:100px;margin-bottom:1rem;}
+    .petal{
+      position:absolute;width:28px;height:42px;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+      transform-origin:bottom center;opacity:0;
+      animation:petalBloom 2s ease forwards;
+    }
+    .petal:nth-child(1){background:var(--rose);left:36px;top:0;animation-delay:0s;}
+    .petal:nth-child(2){background:var(--lavender);left:64px;top:14px;transform:rotate(60deg);animation-delay:0.15s;}
+    .petal:nth-child(3){background:var(--peach);left:64px;top:54px;transform:rotate(120deg);animation-delay:0.3s;}
+    .petal:nth-child(4){background:var(--rose);left:36px;top:68px;transform:rotate(180deg);animation-delay:0.45s;}
+    .petal:nth-child(5){background:var(--sage);left:8px;top:54px;transform:rotate(240deg);animation-delay:0.6s;}
+    .petal:nth-child(6){background:var(--lavender);left:8px;top:14px;transform:rotate(300deg);animation-delay:0.75s;}
+    .petal-center{
+      position:absolute;width:22px;height:22px;border-radius:50%;
+      background:var(--peach);top:50%;left:50%;transform:translate(-50%,-50%);
+      opacity:0;animation:petalBloom 0.4s ease 0.9s forwards;
+    }
+    @keyframes petalBloom{
+      0%{opacity:0;transform:scale(0.3) var(--rot,rotate(0deg));}
+      60%{opacity:1;}
+      100%{opacity:1;transform:scale(1) var(--rot,rotate(0deg));}
+    }
+    .loading-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--rose-deeper);letter-spacing:2px;animation:fadein 0.5s ease 1s both;}
+    .loading-sub{font-size:0.8rem;color:var(--text-mid);margin-top:0.4rem;animation:fadein 0.5s ease 1.2s both;}
+    @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-        .header {
-            background: #1856bb;
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
+    /* ===== TOAST ===== */
+    .toast{
+      position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);
+      background:var(--text-dark);color:var(--white);padding:0.6rem 1.25rem;
+      border-radius:var(--radius-full);font-size:0.82rem;z-index:999;
+      opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;max-width:90vw;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-        .header-content {
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    /* ===== PASSCODE SCREEN ===== */
+    #screen-passcode{
+      background:linear-gradient(160deg,var(--rose-bg) 0%,var(--lavender-light) 100%);
+      display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;
+    }
+    #screen-passcode.active{display:flex;}
+    .pc-flower{font-size:2.5rem;margin-bottom:0.25rem;animation:fadein 0.4s ease;}
+    .pc-logo{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--rose-deeper);margin-bottom:0.25rem;}
+    .pc-sub{font-size:0.82rem;color:var(--text-mid);margin-bottom:2.5rem;}
+    .pc-dots{display:flex;gap:1rem;margin-bottom:2rem;}
+    .pc-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--rose);background:transparent;transition:all 0.2s;}
+    .pc-dot.filled{background:var(--rose);box-shadow:0 0 0 3px var(--rose-light);}
+    .pc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;width:248px;}
+    .pc-btn{
+      background:var(--white);border:1.5px solid var(--cream-dark);border-radius:50%;
+      width:72px;height:72px;font-size:1.5rem;font-weight:500;color:var(--text-dark);
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      box-shadow:var(--shadow-xs);transition:all 0.15s;font-family:'DM Sans',sans-serif;
+    }
+    .pc-btn:active{background:var(--rose-light);border-color:var(--rose);transform:scale(0.93);}
+    .pc-zero{grid-column:2;}
+    .pc-del{background:transparent;border-color:transparent;box-shadow:none;color:var(--rose-dark);font-size:1.2rem;}
+    .pc-error{color:var(--rose-deeper);font-size:0.78rem;margin-top:0.75rem;min-height:1.1rem;text-align:center;}
+    .pc-logout{margin-top:1.75rem;background:none;border:none;color:var(--text-light);font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+    /* ===== AUTH ===== */
+    #screen-login,#screen-register{
+      background:linear-gradient(160deg,var(--rose-bg) 0%,var(--lavender-light) 55%,var(--sage-light) 100%);
+      display:none;flex-direction:column;align-items:center;justify-content:center;
+      padding:2rem;min-height:100vh;
+    }
+    #screen-login.active,#screen-register.active{display:flex;}
+    .auth-flower{font-size:3.2rem;animation:bloompop 0.8s cubic-bezier(.34,1.56,.64,1);margin-bottom:0.35rem;}
+    @keyframes bloompop{from{transform:scale(0) rotate(-20deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+    .auth-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--rose-deeper);}
+    .auth-tagline{font-size:0.82rem;color:var(--text-mid);margin:0.25rem 0 1.75rem;text-align:center;line-height:1.5;}
+    .auth-card{background:var(--white);border-radius:24px;padding:1.75rem;box-shadow:var(--shadow);width:100%;max-width:390px;}
+    .form-group{margin-bottom:1.1rem;}
+    .form-label{font-size:0.78rem;font-weight:500;color:var(--text-mid);margin-bottom:0.4rem;display:block;letter-spacing:0.02em;}
+    .form-input{
+      width:100%;padding:0.75rem 1rem;border:1.5px solid var(--cream-dark);border-radius:var(--radius-sm);
+      font-family:'DM Sans',sans-serif;font-size:0.92rem;color:var(--text-dark);
+      background:var(--cream);outline:none;transition:border 0.2s,box-shadow 0.2s;
+    }
+    .form-input:focus{border-color:var(--rose);box-shadow:0 0 0 3px var(--rose-light);}
+    .form-err{font-size:0.73rem;color:var(--rose-deeper);margin-top:0.3rem;display:none;}
+    .form-err.show{display:block;}
+    .remember-row{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.85rem;}
+    .remember-row input{accent-color:var(--rose);width:15px;height:15px;}
+    .remember-row label{font-size:0.82rem;color:var(--text-mid);cursor:pointer;}
+    .btn-rose{
+      width:100%;padding:0.85rem;border:none;border-radius:var(--radius-sm);
+      background:linear-gradient(135deg,var(--rose) 0%,var(--rose-dark) 100%);
+      color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;
+      cursor:pointer;transition:all 0.2s;letter-spacing:0.01em;
+    }
+    .btn-rose:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 4px 16px rgba(224,127,144,0.35);}
+    .btn-rose:active{transform:translateY(0);filter:brightness(0.97);}
+    .auth-switch{text-align:center;margin-top:1.1rem;font-size:0.82rem;color:var(--text-mid);}
+    .auth-switch a{color:var(--rose-deeper);text-decoration:none;font-weight:500;cursor:pointer;}
 
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-        }
+    /* ===== APP SHELL ===== */
+    #screen-app{background:var(--cream);padding-bottom:76px;}
+    #screen-app.active{display:block;}
+    .app-header{
+      background:var(--white);padding:0.9rem 1.25rem 0.75rem;
+      border-bottom:1px solid var(--cream-dark);position:sticky;top:0;z-index:80;
+    }
+    .header-inner{display:flex;align-items:center;justify-content:space-between;}
+    .header-brand{font-family:'Playfair Display',serif;font-size:1.45rem;color:var(--rose-deeper);line-height:1;}
+    .header-greet{font-size:0.75rem;color:var(--text-mid);margin-top:3px;}
+    .header-avatar{
+      width:38px;height:38px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--rose),var(--lavender-dark));
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Playfair Display',serif;font-size:1rem;color:var(--white);
+      cursor:pointer;box-shadow:var(--shadow-xs);
+    }
+    .bottom-nav{
+      position:fixed;bottom:0;left:0;right:0;background:var(--white);
+      border-top:1px solid var(--cream-dark);display:flex;z-index:80;
+      padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+    .nav-btn{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:0.55rem 0.25rem;cursor:pointer;border:none;background:transparent;
+      transition:all 0.2s;gap:2px;
+    }
+    .nav-ico{font-size:1.25rem;transition:transform 0.2s;}
+    .nav-lbl{font-size:0.62rem;color:var(--text-light);transition:color 0.2s;font-family:'DM Sans',sans-serif;}
+    .nav-btn.active .nav-ico{transform:scale(1.18);}
+    .nav-btn.active .nav-lbl{color:var(--rose-deeper);font-weight:500;}
 
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-        }
+    /* ===== PAGES ===== */
+    .page{display:none;}
+    .page.active{display:block;animation:pagein 0.28s ease;}
+    @keyframes pagein{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+    .pg{padding:1.25rem;}
 
-        .stats {
-            display: flex;
-            gap: 16px;
-            font-size: 14px;
-            color: var(--text-gray);
-        }
+    /* ===== HOME ===== */
+    .home-banner{
+      background:linear-gradient(135deg,var(--rose) 0%,var(--lavender-dark) 100%);
+      border-radius:var(--radius);padding:1.5rem;color:var(--white);
+      margin-bottom:1.25rem;position:relative;overflow:hidden;
+    }
+    .home-banner::before{
+      content:'';position:absolute;right:-20px;bottom:-20px;
+      width:110px;height:110px;border-radius:50%;
+      background:rgba(255,255,255,0.12);
+    }
+    .home-banner::after{
+      content:'';position:absolute;right:20px;bottom:10px;
+      width:60px;height:60px;border-radius:50%;
+      background:rgba(255,255,255,0.08);
+    }
+    .banner-hello{font-size:0.8rem;opacity:0.88;margin-bottom:3px;}
+    .banner-name{font-family:'Playfair Display',serif;font-size:1.65rem;margin-bottom:0.5rem;line-height:1.2;}
+    .banner-aff{font-size:0.82rem;opacity:0.9;font-style:italic;line-height:1.55;position:relative;z-index:1;}
+    .sec-title{
+      font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text-dark);
+      margin-bottom:0.9rem;display:flex;align-items:center;gap:0.5rem;
+    }
+    .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.4rem;}
+    .qcard{
+      background:var(--white);border-radius:var(--radius);padding:1rem 1rem 0.9rem;
+      box-shadow:var(--shadow-xs);cursor:pointer;transition:all 0.22s;
+      border:1.5px solid transparent;
+    }
+    .qcard:hover{border-color:var(--rose-light);transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+    .qcard:active{transform:translateY(0);}
+    .qcard-ico{font-size:1.7rem;margin-bottom:0.5rem;}
+    .qcard-title{font-size:0.85rem;font-weight:500;color:var(--text-dark);}
+    .qcard-sub{font-size:0.72rem;color:var(--text-mid);margin-top:2px;}
+    .mood-box{background:var(--white);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow-xs);margin-bottom:1.25rem;}
+    .mood-row{display:flex;gap:0.5rem;justify-content:center;margin-top:0.85rem;flex-wrap:wrap;}
+    .mood-opt{
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      cursor:pointer;padding:0.45rem 0.6rem;border-radius:var(--radius-sm);
+      transition:all 0.2s;border:2px solid transparent;
+    }
+    .mood-opt:hover{background:var(--rose-light);}
+    .mood-opt.selected{background:var(--rose-light);border-color:var(--rose);}
+    .mood-emo{font-size:1.55rem;}
+    .mood-txt{font-size:0.62rem;color:var(--text-mid);}
+    .progress-box{background:var(--white);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow-xs);}
+    .prog-badges{display:flex;gap:0.45rem;flex-wrap:wrap;margin-bottom:0.85rem;}
+    .badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.28rem 0.65rem;border-radius:var(--radius-full);font-size:0.7rem;font-weight:500;}
+    .badge-rose{background:var(--rose-light);color:var(--rose-deeper);}
+    .badge-lav{background:var(--lavender-light);color:var(--lavender-deeper);}
+    .badge-sage{background:var(--sage-light);color:var(--sage-deeper);}
+    .prog-bar{height:7px;background:var(--cream-dark);border-radius:var(--radius-full);overflow:hidden;}
+    .prog-fill{height:100%;background:linear-gradient(90deg,var(--rose),var(--lavender-dark));border-radius:var(--radius-full);transition:width 0.6s cubic-bezier(.4,0,.2,1);}
+    .prog-lbl{font-size:0.73rem;color:var(--text-mid);margin-top:0.45rem;}
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+    /* ===== PETAL WISDOM ===== */
+    .wisdom-box{
+      background:linear-gradient(135deg,var(--peach-light),var(--rose-light));
+      border:1.5px solid var(--peach);border-radius:var(--radius);
+      padding:1.1rem 1.25rem;margin-bottom:1.25rem;position:relative;overflow:hidden;
+    }
+    .wisdom-box::after{content:'🌼';position:absolute;right:12px;bottom:8px;font-size:2rem;opacity:0.25;}
+    .wisdom-label{font-size:0.7rem;font-weight:500;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;}
+    .wisdom-text{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--text-dark);line-height:1.55;font-style:italic;}
+    .wisdom-date{font-size:0.7rem;color:var(--text-light);margin-top:0.4rem;}
+    .notif-btn{
+      display:inline-flex;align-items:center;gap:0.4rem;margin-top:0.6rem;
+      padding:0.38rem 0.85rem;border-radius:var(--radius-full);border:1.5px solid var(--peach);
+      background:var(--white);font-size:0.73rem;color:var(--text-mid);cursor:pointer;
+      font-family:'DM Sans',sans-serif;transition:all 0.2s;
+    }
+    .notif-btn:hover{background:var(--peach-light);}
+    .notif-btn.active{background:var(--peach);border-color:var(--peach);color:var(--text-dark);}
 
-        .stat-number {
-            color: var(--primary-light);
-            font-weight: 700;
-        }
+    /* ===== EDUCATION ===== */
+    .edu-tabs{display:flex;gap:0.5rem;margin-bottom:1.1rem;overflow-x:auto;padding-bottom:3px;scrollbar-width:none;}
+    .edu-tabs::-webkit-scrollbar{display:none;}
+    .edu-tab{
+      padding:0.48rem 1rem;border-radius:var(--radius-full);border:1.5px solid var(--cream-dark);
+      background:var(--white);font-size:0.79rem;color:var(--text-mid);cursor:pointer;
+      white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;
+    }
+    .edu-tab.active{background:var(--rose);border-color:var(--rose);color:var(--white);}
+    .edu-sec{display:none;}
+    .edu-sec.active{display:block;}
+    .edu-intro{font-size:0.82rem;color:var(--text-mid);margin-bottom:1rem;line-height:1.65;}
+    .mod-card{background:var(--white);border-radius:var(--radius);margin-bottom:0.8rem;box-shadow:var(--shadow-xs);overflow:hidden;}
+    .mod-head{display:flex;align-items:center;gap:0.75rem;padding:0.95rem 1.1rem;cursor:pointer;user-select:none;}
+    .mod-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+    .mod-info{flex:1;}
+    .mod-title{font-weight:500;font-size:0.9rem;color:var(--text-dark);}
+    .mod-sub{font-size:0.72rem;color:var(--text-mid);margin-top:1px;}
+    .mod-arr{font-size:0.9rem;color:var(--text-light);transition:transform 0.3s;flex-shrink:0;}
+    .mod-body{max-height:0;overflow:hidden;transition:max-height 0.45s cubic-bezier(.4,0,.2,1);}
+    .mod-body.open{max-height:900px;border-top:1px solid var(--cream-dark);}
+    .mod-inner{padding:1rem 1.1rem;}
+    .mod-inner p{font-size:0.855rem;line-height:1.72;color:var(--text-mid);margin-bottom:0.7rem;}
+    .mod-inner h4{font-size:0.82rem;font-weight:500;color:var(--text-dark);margin:0.8rem 0 0.35rem;}
+    .tip{background:var(--rose-light);border-left:3px solid var(--rose);border-radius:0 8px 8px 0;padding:0.7rem 0.9rem;margin-top:0.6rem;}
+    .tip p{font-size:0.8rem;color:var(--text-dark);margin:0;}
+    .btn-complete{
+      display:flex;align-items:center;justify-content:center;gap:0.45rem;
+      width:100%;margin-top:1rem;padding:0.6rem;border:none;border-radius:var(--radius-sm);
+      background:linear-gradient(135deg,var(--sage),var(--sage-dark));
+      color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:opacity 0.2s;
+    }
+    .btn-complete:disabled{opacity:0.55;cursor:default;}
+    .faq-search{
+      display:flex;align-items:center;gap:0.6rem;background:var(--white);
+      border:1.5px solid var(--cream-dark);border-radius:var(--radius-sm);
+      padding:0.6rem 0.9rem;margin-bottom:0.9rem;
+    }
+    .faq-search input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.875rem;color:var(--text-dark);background:transparent;}
+    .faq-item{background:var(--white);border-radius:var(--radius-sm);margin-bottom:0.55rem;box-shadow:var(--shadow-xs);}
+    .faq-q{
+      padding:0.85rem 1rem;font-size:0.855rem;font-weight:500;color:var(--text-dark);
+      cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;
+    }
+    .faq-q span:last-child{color:var(--text-light);flex-shrink:0;transition:transform 0.3s;}
+    .faq-a{max-height:0;overflow:hidden;transition:max-height 0.38s ease;font-size:0.83rem;color:var(--text-mid);line-height:1.68;}
+    .faq-a.open{max-height:350px;padding:0 1rem 0.9rem;}
+    .faq-empty{text-align:center;padding:2rem;color:var(--text-light);font-size:0.83rem;}
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 24px 20px;
-        }
+    /* ===== TRACKER ===== */
+    .tr-card{background:var(--white);border-radius:var(--radius);padding:1.1rem 1.2rem;box-shadow:var(--shadow-xs);margin-bottom:0.9rem;}
+    .tr-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--text-dark);margin-bottom:1rem;}
+    .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;}
+    .cal-month{font-weight:500;font-size:0.88rem;color:var(--text-dark);}
+    .cal-nav-btn{
+      background:none;border:1.5px solid var(--cream-dark);border-radius:8px;
+      padding:0.2rem 0.65rem;cursor:pointer;color:var(--text-mid);font-size:0.9rem;transition:all 0.2s;
+    }
+    .cal-nav-btn:hover{background:var(--cream-dark);}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+    .cal-dn{font-size:0.63rem;color:var(--text-light);text-align:center;padding:0.2rem;}
+    .cal-d{
+      aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+      font-size:0.73rem;border-radius:7px;cursor:pointer;transition:all 0.15s;color:var(--text-dark);
+    }
+    .cal-d:hover:not(.cal-today){background:var(--rose-light);}
+    .cal-today{background:var(--rose);color:var(--white);font-weight:500;}
+    .cal-period{background:var(--rose-light);color:var(--rose-deeper);}
+    .cal-fertile{background:var(--sage-light);color:var(--sage-deeper);}
+    .cal-predicted{border:1.5px dashed var(--rose);color:var(--rose-dark);}
+    .cal-other{opacity:0.28;}
+    .cal-legend{display:flex;flex-wrap:wrap;gap:0.55rem;margin-top:0.75rem;}
+    .leg-item{display:flex;align-items:center;gap:0.32rem;font-size:0.68rem;color:var(--text-mid);}
+    .leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+    .period-form label{font-size:0.78rem;color:var(--text-mid);display:block;margin-bottom:0.35rem;}
+    .period-form input[type=date]{
+      width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--cream-dark);
+      border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:0.875rem;
+      color:var(--text-dark);background:var(--cream);outline:none;margin-bottom:0.9rem;
+      transition:border 0.2s;
+    }
+    .period-form input[type=date]:focus{border-color:var(--rose);}
+    .cycle-result{
+      background:var(--lavender-light);border-radius:var(--radius-sm);
+      padding:0.85rem;margin-top:0.75rem;font-size:0.82rem;color:var(--text-mid);line-height:1.65;display:none;
+    }
+    .cycle-result strong{color:var(--lavender-deeper);}
+    .period-hist{margin-top:0.85rem;}
+    .period-row{
+      display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;
+      border-bottom:1px solid var(--cream-dark);
+    }
+    .period-row:last-child{border-bottom:none;}
+    .period-row-info{flex:1;}
+    .period-row-date{font-size:0.8rem;color:var(--text-dark);}
+    .period-row-dur{font-size:0.72rem;color:var(--text-mid);margin-top:1px;}
+    .btn-del-sm{
+      background:none;border:1px solid #ffd0d0;border-radius:7px;
+      padding:0.3rem 0.55rem;font-size:0.72rem;color:var(--rose-deeper);
+      cursor:pointer;transition:all 0.2s;white-space:nowrap;
+    }
+    .btn-del-sm:hover{background:var(--rose-light);}
+    .mood-hist{max-height:240px;overflow-y:auto;}
+    .mood-log{display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;border-bottom:1px solid var(--cream-dark);}
+    .mood-log:last-child{border-bottom:none;}
+    .mood-log-emo{font-size:1.3rem;}
+    .mood-log-lbl{font-size:0.84rem;color:var(--text-dark);}
+    .mood-log-date{font-size:0.72rem;color:var(--text-mid);}
+    .empty-state{text-align:center;padding:1.5rem 0;color:var(--text-light);font-size:0.82rem;}
 
-        .input-section {
-            background: var(--bg-card);
-            padding: 24px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
+    /* ===== PROFILE ===== */
+    .prof-header{
+      background:linear-gradient(135deg,var(--lavender-light),var(--rose-light));
+      border-radius:var(--radius);padding:1.5rem;text-align:center;margin-bottom:0.9rem;
+    }
+    .prof-av{
+      width:72px;height:72px;border-radius:50%;margin:0 auto 0.75rem;
+      background:linear-gradient(135deg,var(--rose),var(--lavender-dark));
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--white);
+      box-shadow:0 4px 16px rgba(192,128,160,0.3);
+    }
+    .prof-name{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--text-dark);}
+    .prof-age{font-size:0.78rem;color:var(--text-mid);margin-top:3px;}
+    .prof-email{font-size:0.72rem;color:var(--text-light);margin-top:2px;}
+    .prof-sec{background:var(--white);border-radius:var(--radius);padding:0.25rem 1.1rem;box-shadow:var(--shadow-xs);margin-bottom:0.85rem;}
+    .prof-row{
+      display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0;
+      border-bottom:1px solid var(--cream-dark);cursor:pointer;transition:background 0.15s;
+    }
+    .prof-row:last-child{border-bottom:none;}
+    .prof-row:hover{background:var(--rose-bg);margin:0 -1.1rem;padding-left:1.1rem;padding-right:1.1rem;}
+    .prof-row-ico{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+    .prof-row-lbl{font-size:0.875rem;color:var(--text-dark);flex:1;}
+    .prof-row-arr{font-size:0.75rem;color:var(--text-light);}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;margin-bottom:0.85rem;}
+    .stat-card{border-radius:var(--radius-sm);padding:0.85rem;text-align:center;}
+    .stat-num{font-size:1.45rem;font-weight:500;}
+    .stat-lbl{font-size:0.7rem;color:var(--text-mid);margin-top:2px;}
+    .btn-outline{
+      width:100%;padding:0.78rem;border:1.5px solid var(--rose);border-radius:var(--radius-sm);
+      background:transparent;color:var(--rose-deeper);font-family:'DM Sans',sans-serif;
+      font-size:0.9rem;cursor:pointer;transition:all 0.2s;margin-bottom:0.5rem;
+    }
+    .btn-outline:hover{background:var(--rose-light);}
 
-        .input-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
+    /* ===== MODALS ===== */
+    .modal-ov{
+      position:fixed;inset:0;background:rgba(50,30,30,0.5);z-index:200;
+      display:none;align-items:flex-end;justify-content:center;
+      backdrop-filter:blur(2px);
+    }
+    .modal-ov.open{display:flex;}
+    .modal-sh{
+      background:var(--white);border-radius:24px 24px 0 0;padding:1.5rem 1.5rem 2rem;
+      width:100%;max-width:500px;animation:slideup 0.32s cubic-bezier(.34,1.2,.64,1);
+      max-height:92vh;overflow-y:auto;
+    }
+    @keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+    .modal-handle{width:36px;height:4px;background:var(--cream-dark);border-radius:2px;margin:0 auto 1.25rem;}
+    .modal-close{float:right;background:none;border:none;font-size:1.1rem;color:var(--text-light);cursor:pointer;margin:-4px -4px 0 0;padding:4px;}
+    .modal-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--text-dark);margin-bottom:1rem;clear:both;}
+    .btn-sage{
+      width:100%;padding:0.78rem;border:none;border-radius:var(--radius-sm);
+      background:linear-gradient(135deg,var(--sage),var(--sage-dark));
+      color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;
+      cursor:pointer;transition:opacity 0.2s;margin-bottom:0.5rem;
+    }
+    .btn-sage:hover{opacity:0.9;}
+    .btn-ghost{
+      width:100%;padding:0.68rem;border:1.5px solid var(--cream-dark);border-radius:var(--radius-sm);
+      background:transparent;color:var(--text-mid);font-family:'DM Sans',sans-serif;
+      font-size:0.875rem;cursor:pointer;transition:all 0.2s;
+    }
+    .btn-ghost:hover{background:var(--cream-dark);}
 
-        input[type="text"] {
-            flex: 1;
-            padding: 14px 18px;
-            background: var(--bg-dark);
-            border: 2px solid rgba(99, 102, 241, 0.3);
-            border-radius: 12px;
-            color: var(--text-light);
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
+    /* ===== CELEBRATE ANIMATION ===== */
+    .bloom-celebrate{position:fixed;inset:0;pointer-events:none;z-index:500;overflow:hidden;}
+    .bloom-petal{
+      position:absolute;font-size:1.4rem;animation:floatup 1.4s ease forwards;
+      top:100%;
+    }
+    @keyframes floatup{
+      0%{transform:translateY(0) rotate(0deg) scale(0.5);opacity:1;}
+      100%{transform:translateY(-100vh) rotate(720deg) scale(1);opacity:0;}
+    }
 
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar{width:3px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--rose-light);border-radius:2px;}
 
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .priority-selector {
-            display: flex;
-            gap: 8px;
-        }
-
-        .priority-btn {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            background: transparent;
-            color: var(--text-gray);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .priority-btn.active {
-            border-color: currentColor;
-            background: rgba(255, 255, 255, 0.1);
-            font-weight: 600;
-        }
-
-        .priority-btn.high {
-            color: var(--danger);
-        }
-
-        .priority-btn.medium {
-            color: var(--warning);
-        }
-
-        .priority-btn.low {
-            color: var(--success);
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        .filter-tab {
-            padding: 10px 20px;
-            background: var(--bg-card);
-            border: 2px solid transparent;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 500;
-            color: #ffffff;
-        }
-
-        .filter-tab.active {
-            background: var(--primary);
-            border-color: var(--primary-light);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .tasks-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .task-item {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            transition: all 0.3s ease;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .task-item:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .task-item.high {
-            border-left-color: var(--danger);
-        }
-
-        .task-item.medium {
-            border-left-color: var(--warning);
-        }
-
-        .task-item.low {
-            border-left-color: var(--success);
-        }
-
-        .task-checkbox {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--primary);
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-
-        .task-checkbox:hover {
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .task-checkbox.checked {
-            background: var(--primary);
-        }
-
-        .task-content {
-            flex: 1;
-        }
-
-        .task-text {
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .task-text.completed {
-            text-decoration: line-through;
-            opacity: 0.6;
-        }
-
-        .task-meta {
-            display: flex;
-            gap: 12px;
-            font-size: 12px;
-            color: var(--text-gray);
-        }
-
-        .task-time {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 18px;
-        }
-
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-
-        .btn-delete:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-gray);
-        }
-
-        .empty-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .progress-bar {
-            background: var(--bg-card);
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 16px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            transition: width 0.5s ease;
-            border-radius: 4px;
-        }
-
-        @media (max-width: 640px) {
-            .header-content {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .input-group {
-                flex-direction: column;
-            }
-
-            .stats {
-                width: 100%;
-                justify-content: space-around;
-            }
-        }
-
-        .logo h1 {
-            font-size: 50px;
-            font-weight: 800;
-        }
-    </style>
+    @media(max-width:360px){
+      .quick-grid{grid-template-columns:1fr;}
+      .mood-row{gap:0.35rem;}
+      .pc-grid{width:215px;}
+      .pc-btn{width:62px;height:62px;font-size:1.3rem;}
+    }
+  </style>
 </head>
-
 <body>
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">✓</div>
-                <h1 class="text-judul">TaskFlow</h1>
-            </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <span>📝</span>
-                    <span>Total: <span class="stat-number" id="totalTasks">0</span></span>
-                </div>
-                <div class="stat-item">
-                    <span>✅</span>
-                    <span>Selesai: <span class="stat-number" id="completedTasks">0</span></span>
-                </div>
-            </div>
-        </div>
-    </header>
 
-    <div class="container">
-        <div class="input-section">
-            <div class="input-group">
-                <input type="text" id="taskInput" placeholder="Tambahkan tugas baru..."
-                    onkeypress="if(event.key==='Enter') addTask()" />
-                <button class="btn btn-primary" onclick="addTask()">
-                    <span>➕</span>
-                    <span>Tambah</span>
-                </button>
-            </div>
-            <div class="priority-selector">
-                <button class="priority-btn high" onclick="setPriority('high')">🔴 Tinggi</button>
-                <button class="priority-btn medium active" onclick="setPriority('medium')">🟡 Sedang</button>
-                <button class="priority-btn low" onclick="setPriority('low')">🟢 Rendah</button>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
-            </div>
-        </div>
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loading-petals">
+    <div class="petal"></div><div class="petal"></div><div class="petal"></div>
+    <div class="petal"></div><div class="petal"></div><div class="petal"></div>
+    <div class="petal-center"></div>
+  </div>
+  <div class="loading-title">BLOOMY</div>
+  <div class="loading-sub">Tumbuh Bersama 🌸</div>
+</div>
 
-        <div class="filter-tabs">
-            <button class="filter-tab active" onclick="filterTasks('all')">Semua</button>
-            <button class="filter-tab" onclick="filterTasks('active')">Aktif</button>
-            <button class="filter-tab" onclick="filterTasks('completed')">Selesai</button>
-            <button class="filter-tab" onclick="filterTasks('high')">🔴 Prioritas Tinggi</button>
-            <button class="filter-tab" onclick="filterTasks('medium')">🟡 Prioritas Sedang</button>
-            <button class="filter-tab" onclick="filterTasks('low')">🟢 Prioritas Rendah</button>
-        </div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-        <div class="tasks-list" id="tasksList"></div>
+<!-- CELEBRATE OVERLAY -->
+<div class="bloom-celebrate" id="celebrate"></div>
+
+<!-- ===== PASSCODE SCREEN ===== -->
+<div class="screen" id="screen-passcode">
+  <div class="pc-flower">🌸</div>
+  <div class="pc-logo">BLOOMY</div>
+  <div class="pc-sub">Masukkan passcode untuk membuka</div>
+  <div class="pc-dots" id="pc-dots">
+    <div class="pc-dot" id="dot-0"></div>
+    <div class="pc-dot" id="dot-1"></div>
+    <div class="pc-dot" id="dot-2"></div>
+    <div class="pc-dot" id="dot-3"></div>
+  </div>
+  <div class="pc-grid">
+    <button class="pc-btn" onclick="pcIn('1')">1</button>
+    <button class="pc-btn" onclick="pcIn('2')">2</button>
+    <button class="pc-btn" onclick="pcIn('3')">3</button>
+    <button class="pc-btn" onclick="pcIn('4')">4</button>
+    <button class="pc-btn" onclick="pcIn('5')">5</button>
+    <button class="pc-btn" onclick="pcIn('6')">6</button>
+    <button class="pc-btn" onclick="pcIn('7')">7</button>
+    <button class="pc-btn" onclick="pcIn('8')">8</button>
+    <button class="pc-btn" onclick="pcIn('9')">9</button>
+    <button class="pc-btn pc-zero" onclick="pcIn('0')">0</button>
+    <button class="pc-btn pc-del" onclick="pcDel()">⌫</button>
+  </div>
+  <div class="pc-error" id="pc-error"></div>
+  <button class="pc-logout" onclick="doLogout()">Keluar &amp; Ganti Akun</button>
+</div>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="screen" id="screen-login">
+  <div class="auth-flower">🌷</div>
+  <div class="auth-title">Selamat Datang</div>
+  <div class="auth-tagline">Masuk untuk melanjutkan perjalanan bloomingmu</div>
+  <div class="auth-card">
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="li-email" placeholder="email@kamu.com"/>
+      <div class="form-err" id="li-email-err">Format email tidak valid</div>
     </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="li-pass" placeholder="Minimal 6 karakter"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="form-err" id="li-pass-err">Password minimal 6 karakter</div>
+    </div>
+    <div class="remember-row">
+      <input type="checkbox" id="li-remember"/>
+      <label for="li-remember">Ingat saya</label>
+    </div>
+    <div class="form-err" id="li-general-err" style="margin-bottom:0.65rem;">Email atau password salah</div>
+    <button class="btn-rose" onclick="doLogin()">Masuk 🌸</button>
+    <div class="auth-switch">Belum punya akun? <a onclick="showScreen('register')">Daftar sekarang</a></div>
+  </div>
+</div>
 
-    <script>
-        let tasks = [];
-        let currentPriority = 'medium';
-        let currentFilter = 'all';
+<!-- ===== REGISTER SCREEN ===== -->
+<div class="screen" id="screen-register">
+  <div class="auth-flower">🌺</div>
+  <div class="auth-title">Bergabung</div>
+  <div class="auth-tagline">Mulai perjalanan bloomingmu hari ini 🌱</div>
+  <div class="auth-card">
+    <div class="form-group">
+      <label class="form-label">Nama Panggilan</label>
+      <input class="form-input" type="text" id="rg-name" placeholder="Panggil aku..."/>
+      <div class="form-err" id="rg-name-err">Nama panggilan wajib diisi</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="rg-email" placeholder="email@kamu.com"/>
+      <div class="form-err" id="rg-email-err">Email tidak valid atau sudah terdaftar</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Umur</label>
+      <input class="form-input" type="number" id="rg-age" placeholder="Umurku sekarang..." min="9" max="18"/>
+      <div class="form-err" id="rg-age-err">Umur harus antara 9–18 tahun</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="rg-pass" placeholder="Minimal 6 karakter"
+        onkeydown="if(event.key==='Enter')doRegister()"/>
+      <div class="form-err" id="rg-pass-err">Password minimal 6 karakter</div>
+    </div>
+    <button class="btn-rose" onclick="doRegister()">Daftar Sekarang 🌷</button>
+    <div class="auth-switch">Sudah punya akun? <a onclick="showScreen('login')">Masuk</a></div>
+  </div>
+</div>
 
-        function loadTasks() {
-            const saved = localStorage.getItem('taskflow_tasks');
-            if (saved) {
-                tasks = JSON.parse(saved);
-                renderTasks();
-            }
-        }
+<!-- ===== MAIN APP ===== -->
+<div class="screen" id="screen-app">
 
-        function saveTasks() {
-            localStorage.setItem('taskflow_tasks', JSON.stringify(tasks));
-        }
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <div class="header-brand">🌸 BLOOMY</div>
+        <div class="header-greet" id="hdr-greet">Hai, Bunga!</div>
+      </div>
+      <div class="header-avatar" id="hdr-av" onclick="switchPage('profile')">B</div>
+    </div>
+  </header>
 
-        function setPriority(priority) {
-            currentPriority = priority;
-            document.querySelectorAll('.priority-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-        }
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home">
+    <div class="pg">
+      <div class="home-banner">
+        <div class="banner-hello">Hai sayang 🌸</div>
+        <div class="banner-name" id="banner-name">Bunga</div>
+        <div class="banner-aff" id="banner-aff">"Kamu sedang tumbuh, dan itu luar biasa indah."</div>
+      </div>
 
-        function addTask() {
-            const input = document.getElementById('taskInput');
-            const text = input.value.trim();
+      <!-- Petal Wisdom -->
+      <div class="wisdom-box">
+        <div class="wisdom-label">🌼 Petal Wisdom Hari Ini</div>
+        <div class="wisdom-text" id="wisdom-text">Memuat afirmasi...</div>
+        <div class="wisdom-date" id="wisdom-date"></div>
+        <button class="notif-btn" id="notif-btn" onclick="toggleNotif()">
+          <span id="notif-ico">🔔</span>
+          <span id="notif-lbl">Aktifkan pengingat harian</span>
+        </button>
+      </div>
 
-            if (text === '') return;
+      <div class="sec-title">✨ Aksi Cepat</div>
+      <div class="quick-grid">
+        <div class="qcard" onclick="switchPage('education')">
+          <div class="qcard-ico">📖</div>
+          <div class="qcard-title">Bloom Journey</div>
+          <div class="qcard-sub">Modul edukasi pubertas</div>
+        </div>
+        <div class="qcard" onclick="switchPage('tracker')">
+          <div class="qcard-ico">📅</div>
+          <div class="qcard-title">Bloom Diary</div>
+          <div class="qcard-sub">Catat siklus &amp; moodmu</div>
+        </div>
+        <div class="qcard" onclick="switchPage('education');setTimeout(()=>switchEduTab('faq'),80)">
+          <div class="qcard-ico">💬</div>
+          <div class="qcard-title">FAQ</div>
+          <div class="qcard-sub">Pertanyaan umum</div>
+        </div>
+        <div class="qcard" onclick="switchPage('profile')">
+          <div class="qcard-ico">👤</div>
+          <div class="qcard-title">Profilku</div>
+          <div class="qcard-sub">Lihat &amp; edit data</div>
+        </div>
+      </div>
 
-            const task = {
-                id: Date.now(),
-                text: text,
-                completed: false,
-                priority: currentPriority,
-                createdAt: new Date().toLocaleString('id-ID')
-            };
+      <div class="sec-title">🌼 Perasaan Hari Ini?</div>
+      <div class="mood-box">
+        <div style="font-size:0.8rem;color:var(--text-mid);">Pilih satu kelopak perasaanmu</div>
+        <div class="mood-row" id="home-mood-row">
+          <div class="mood-opt" onclick="pickMood(this,'😊','Bahagia')"><div class="mood-emo">😊</div><div class="mood-txt">Bahagia</div></div>
+          <div class="mood-opt" onclick="pickMood(this,'😐','Biasa Aja')"><div class="mood-emo">😐</div><div class="mood-txt">Biasa</div></div>
+          <div class="mood-opt" onclick="pickMood(this,'😢','Sedih')"><div class="mood-emo">😢</div><div class="mood-txt">Sedih</div></div>
+          <div class="mood-opt" onclick="pickMood(this,'😤','Marah')"><div class="mood-emo">😤</div><div class="mood-txt">Marah</div></div>
+          <div class="mood-opt" onclick="pickMood(this,'😰','Cemas')"><div class="mood-emo">😰</div><div class="mood-txt">Cemas</div></div>
+          <div class="mood-opt" onclick="pickMood(this,'😴','Lelah')"><div class="mood-emo">😴</div><div class="mood-txt">Lelah</div></div>
+        </div>
+      </div>
 
-            tasks.unshift(task);
-            input.value = '';
-            saveTasks();
-            renderTasks();
-        }
+      <div class="sec-title">🌿 Progres Bloom</div>
+      <div class="progress-box">
+        <div class="prog-badges" id="prog-badges"></div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="prog-lbl" id="prog-lbl">0 dari 3 bagian dipelajari</div>
+      </div>
+    </div>
+  </div>
 
-        function toggleTask(id) {
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.completed = !task.completed;
-                saveTasks();
-                renderTasks();
-            }
-        }
+  <!-- EDUCATION PAGE -->
+  <div class="page" id="page-education">
+    <div class="pg">
+      <div class="sec-title">🌺 Bloom Journey</div>
+      <div class="edu-tabs">
+        <button class="edu-tab active" onclick="switchEduTab('roots')">🌱 The Roots</button>
+        <button class="edu-tab" onclick="switchEduTab('stem')">🌿 The Stem</button>
+        <button class="edu-tab" onclick="switchEduTab('blossom')">🌸 The Blossom</button>
+        <button class="edu-tab" onclick="switchEduTab('faq')">💬 FAQ</button>
+      </div>
 
-        function deleteTask(id) {
-            tasks = tasks.filter(t => t.id !== id);
-            saveTasks();
-            renderTasks();
-        }
+      <!-- THE ROOTS -->
+      <div class="edu-sec active" id="edu-roots">
+        <div class="edu-intro">Pahami hormon yang bekerja di dalam tubuhmu — mereka bukan musuh, tapi sahabat yang sedang belajar! 🌱</div>
 
-        function filterTasks(filter) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            renderTasks();
-        }
-
-        function renderTasks() {
-            const container = document.getElementById('tasksList');
-
-            let filteredTasks = tasks;
-
-            if (currentFilter === 'active') {
-                filteredTasks = tasks.filter(t => !t.completed);
-            } else if (currentFilter === 'completed') {
-                filteredTasks = tasks.filter(t => t.completed);
-            } else if (['high', 'medium', 'low'].includes(currentFilter)) {
-                filteredTasks = tasks.filter(t => t.priority === currentFilter);
-            }
-
-            if (filteredTasks.length === 0) {
-                container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">📋</div>
-            <h3>Tidak ada tugas</h3>
-            <p>Mulai tambahkan tugas baru untuk memulai!</p>
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--rose-light)">🌸</div>
+            <div class="mod-info"><div class="mod-title">Estrogen</div><div class="mod-sub">Hormon feminitasmu</div></div>
+            <div class="mod-arr">›</div>
           </div>
-        `;
-            } else {
-                container.innerHTML = filteredTasks.map(task => `
-          <div class="task-item ${task.priority}">
-            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
-              ${task.completed ? '✓' : ''}
-            </div>
-            <div class="task-content">
-              <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
-              <div class="task-meta">
-                <span class="task-time">🕒 ${task.createdAt}</span>
-                <span>📌 ${task.priority === 'high' ? 'Tinggi' : task.priority === 'medium' ? 'Sedang' : 'Rendah'}</span>
-              </div>
-            </div>
-            <div class="task-actions">
-              <button class="btn-icon btn-delete" onclick="deleteTask(${task.id})">🗑️</button>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Estrogen adalah hormon utama yang diproduksi oleh ovarium (indung telur). Hormon ini mulai meningkat saat kamu memasuki masa pubertas, biasanya antara usia 8–13 tahun.</p>
+              <h4>Apa yang dilakukan Estrogen?</h4>
+              <p>• Membantu payudara berkembang<br>• Membuat pinggul menjadi lebih lebar<br>• Mengatur siklus menstruasi<br>• Memengaruhi pertumbuhan tulang<br>• Berperan dalam mood dan emosi</p>
+              <div class="tip"><p>💡 <strong>Fun fact:</strong> Estrogen juga bikin kulitmu terlihat lebih cerah dan sehat! Perubahan kulit saat pubertas adalah proses yang sepenuhnya normal.</p></div>
+              <button class="btn-complete" id="bc-roots-estrogen" onclick="markDone('roots','estrogen',this)">✓ Selesai Baca</button>
             </div>
           </div>
-        `).join('');
-            }
+        </div>
 
-            updateStats();
-        }
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--lavender-light)">🌿</div>
+            <div class="mod-info"><div class="mod-title">Progesteron</div><div class="mod-sub">Hormon penyeimbang</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Progesteron adalah hormon yang bekerja berpasangan dengan estrogen. Ia diproduksi setelah ovulasi (pelepasan sel telur) dan berperan penting dalam mengatur siklus menstruasi.</p>
+              <h4>Peran Progesteron:</h4>
+              <p>• Mempersiapkan rahim untuk kehamilan<br>• Mengatur suhu tubuh basal<br>• Memengaruhi suasana hati sebelum menstruasi<br>• Membantu kualitas tidur</p>
+              <h4>Kenapa mood bisa tidak stabil?</h4>
+              <p>Ketika kadar progesteron turun menjelang menstruasi, kamu bisa merasa lebih sensitif atau mudah marah. Ini sangat normal dan dialami hampir semua perempuan!</p>
+              <div class="tip"><p>💡 Coba olahraga ringan, makan cokelat hitam, atau curhat ke orang yang dipercaya saat mood sedang turun.</p></div>
+              <button class="btn-complete" id="bc-roots-progesteron" onclick="markDone('roots','progesteron',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
 
-        function updateStats() {
-            const total = tasks.length;
-            const completed = tasks.filter(t => t.completed).length;
-            const progress = total > 0 ? (completed / total) * 100 : 0;
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--peach-light)">⚡</div>
+            <div class="mod-info"><div class="mod-title">Hormon FSH &amp; LH</div><div class="mod-sub">Komandan siklus bulanan</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>FSH (Follicle-Stimulating Hormone) dan LH (Luteinizing Hormone) adalah hormon yang diproduksi oleh otak dan mengatur siklus menstruasimu.</p>
+              <h4>FSH bertugas:</h4>
+              <p>Merangsang pertumbuhan folikel (kantung berisi sel telur) di ovarium setiap bulannya.</p>
+              <h4>LH bertugas:</h4>
+              <p>Memicu ovulasi, yaitu pelepasan sel telur matang dari ovarium. Lonjakan LH terjadi di tengah siklus menstruasimu.</p>
+              <div class="tip"><p>💡 FSH dan LH bekerja seperti "komandan" yang mengatur jadwal bulanan tubuhmu. Mereka luar biasa canggih!</p></div>
+              <button class="btn-complete" id="bc-roots-fsh" onclick="markDone('roots','fsh',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            document.getElementById('totalTasks').textContent = total;
-            document.getElementById('completedTasks').textContent = completed;
-            document.getElementById('progressBar').style.width = progress + '%';
-        }
+      <!-- THE STEM -->
+      <div class="edu-sec" id="edu-stem">
+        <div class="edu-intro">Tubuhmu sedang bertransformasi menjadi versi yang lebih dewasa. Semua perubahan ini adalah bagian dari perjalanan yang indah! 🌿</div>
 
-        loadTasks();
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--rose-light)">🩷</div>
+            <div class="mod-info"><div class="mod-title">Perubahan Tubuh</div><div class="mod-sub">Apa yang akan terjadi?</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Pubertas pada perempuan biasanya dimulai antara usia 8–13 tahun dan berlangsung selama beberapa tahun secara bertahap.</p>
+              <h4>Perubahan yang akan kamu alami:</h4>
+              <p>• <strong>Payudara berkembang</strong> — dimulai dengan rasa sedikit nyeri atau geli<br>• <strong>Rambut tubuh</strong> — muncul di ketiak dan area kemaluan<br>• <strong>Pinggul melebar</strong> — membentuk lekukan yang lebih feminin<br>• <strong>Pertumbuhan tinggi badan</strong> — biasanya pesat di awal pubertas<br>• <strong>Kulit berminyak &amp; jerawat</strong> — akibat peningkatan produksi sebum<br>• <strong>Menstruasi pertama (menarche)</strong> — tanda kematangan reproduksi</p>
+              <div class="tip"><p>💡 Setiap perempuan punya timeline yang berbeda. Tidak ada yang "terlalu cepat" atau "terlalu lambat" — tubuhmu tahu waktunya sendiri!</p></div>
+              <button class="btn-complete" id="bc-stem-perubahan" onclick="markDone('stem','perubahan',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(() => console.log('Service Worker registered'))
-                    .catch(err => console.error('Service Worker error:', err));
-            });
-        }
-    </script>
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--sage-light)">🧼</div>
+            <div class="mod-info"><div class="mod-title">Kebersihan Diri</div><div class="mod-sub">Tips merawat tubuhmu</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <h4>Kebersihan Umum:</h4>
+              <p>Mandi minimal 2x sehari, terutama setelah olahraga. Gunakan sabun yang lembut untuk area sensitif.</p>
+              <h4>Saat Menstruasi:</h4>
+              <p>• Ganti pembalut setiap 4–6 jam meski belum penuh<br>• Cuci tangan sebelum dan sesudah mengganti pembalut<br>• Basuh area kemaluan dari depan ke belakang (sangat penting!)<br>• Gunakan air biasa — vagina bersifat self-cleaning, tidak perlu sabun khusus di dalamnya</p>
+              <h4>Merawat Kulit Berjerawat:</h4>
+              <p>• Cuci muka 2x sehari dengan cleanser lembut<br>• Jangan memencet jerawat<br>• Gunakan produk non-comedogenic<br>• Minum air putih minimal 8 gelas sehari</p>
+              <div class="tip"><p>💡 Gunakan deodoran di ketiak sejak awal pubertas untuk menjaga kesegaran sepanjang hari.</p></div>
+              <button class="btn-complete" id="bc-stem-kebersihan" onclick="markDone('stem','kebersihan',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
 
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--lavender-light)">👙</div>
+            <div class="mod-info"><div class="mod-title">Panduan Bra Pertama</div><div class="mod-sub">Tips memilih yang tepat</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Memilih bra pertama bisa terasa awkward, tapi ini sangat wajar! Berikut panduannya:</p>
+              <h4>Kapan mulai pakai bra?</h4>
+              <p>Ketika payudara mulai berkembang dan kamu merasa tidak nyaman saat bergerak, atau saat kamu sudah merasa butuh dukungan ekstra.</p>
+              <h4>Jenis bra untuk pemula:</h4>
+              <p>• <strong>Bralette / Crop bra</strong> — paling nyaman untuk pertama kali<br>• <strong>Training bra</strong> — dukungan ringan untuk payudara yang baru berkembang<br>• <strong>Sports bra</strong> — wajib saat olahraga</p>
+              <h4>Tips saat membeli:</h4>
+              <p>• Pilih bahan katun yang breathable<br>• Tidak perlu terlalu ketat — harus nyaman bernafas<br>• Minta bantuan ibu atau kakak perempuan saat memilih</p>
+              <div class="tip"><p>💡 Tidak ada salahnya mengajak ibu atau kakak saat pertama kali membeli bra. Mereka pasti senang membantu!</p></div>
+              <button class="btn-complete" id="bc-stem-bra" onclick="markDone('stem','bra',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--peach-light)">🌺</div>
+            <div class="mod-info"><div class="mod-title">Produk Sanitasi</div><div class="mod-sub">Pembalut &amp; pilihan lainnya</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <h4>Pembalut (Pads) — Direkomendasikan untuk pemula</h4>
+              <p>Ditempel di celana dalam, mudah digunakan, dan tersedia dalam berbagai ukuran (reguler, maxi, overnight).</p>
+              <h4>Pantyliner</h4>
+              <p>Sangat tipis, cocok untuk keputihan atau di akhir menstruasi ketika aliran sudah sedikit.</p>
+              <h4>Tampon &amp; Menstrual Cup</h4>
+              <p>Dimasukkan ke dalam vagina. Lebih cocok setelah terbiasa dengan tubuh sendiri. Tidak wajib dan tidak dianjurkan untuk pemula.</p>
+              <div class="tip"><p>💡 Selalu bawa pembalut cadangan di tas! Menstruasi bisa datang tiba-tiba, terutama di bulan-bulan pertama.</p></div>
+              <button class="btn-complete" id="bc-stem-sanitasi" onclick="markDone('stem','sanitasi',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- THE BLOSSOM -->
+      <div class="edu-sec" id="edu-blossom">
+        <div class="edu-intro">Emosimu adalah bagian dari dirimu yang berharga. Mari belajar memahami dan merangkulnya dengan penuh kasih sayang 🌸</div>
+
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--lavender-light)">🎭</div>
+            <div class="mod-info"><div class="mod-title">Mengelola Mood Swings</div><div class="mod-sub">Naik turunnya perasaan</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Mood swings adalah perubahan suasana hati yang cepat dan terkadang ekstrem. Ini sangat umum terjadi selama pubertas akibat fluktuasi hormon.</p>
+              <h4>Kenapa mood swings terjadi?</h4>
+              <p>Fluktuasi estrogen dan progesteron langsung memengaruhi kimia otak, termasuk serotonin (hormon bahagia) dan dopamin.</p>
+              <h4>Cara mengatasinya:</h4>
+              <p>• <strong>Kenali polanya</strong> — catat di Bloom Diary kapan mood berubah<br>• <strong>Olahraga ringan</strong> — jalan kaki 20 menit meningkatkan serotonin<br>• <strong>Journaling</strong> — tuliskan perasaanmu tanpa menghakimi<br>• <strong>Berbicara</strong> — curhat ke orang yang dipercaya<br>• <strong>Tidur cukup</strong> — kurang tidur memperparah mood swings</p>
+              <div class="tip"><p>💡 Teknik 4-7-8: tarik nafas 4 detik, tahan 7 detik, hembuskan 8 detik. Lakukan 3x saat emosi meluap.</p></div>
+              <button class="btn-complete" id="bc-blossom-mood" onclick="markDone('blossom','mood',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--rose-light)">💗</div>
+            <div class="mod-info"><div class="mod-title">Membangun Kepercayaan Diri</div><div class="mod-sub">Body positivity &amp; self-love</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Saat tubuh berubah, wajar jika kamu merasa tidak nyaman atau insecure. Tapi ingat: tubuhmu sedang melakukan hal yang luar biasa!</p>
+              <h4>Praktik self-love sehari-hari:</h4>
+              <p>• <strong>Stop membandingkan</strong> — setiap tubuh punya jadwalnya sendiri<br>• <strong>Bicara baik pada diri sendiri</strong> — ubah "aku jelek" jadi "aku sedang tumbuh"<br>• <strong>Rayakan kemajuan kecil</strong> — menyelesaikan modul adalah prestasi!<br>• <strong>Rawat tubuhmu</strong> — skincare, olahraga, makan bergizi adalah bentuk cinta diri</p>
+              <h4>Jika merasa sangat tidak nyaman:</h4>
+              <p>Bicarakan dengan orang tua, guru BK, atau konselor kesehatan. Perasaanmu valid dan kamu berhak mendapat dukungan.</p>
+              <div class="tip"><p>💡 Setiap hari, sebutkan 3 hal yang kamu syukuri dari tubuhmu. Mulai dari hal kecil seperti "Aku suka senyumku!"</p></div>
+              <button class="btn-complete" id="bc-blossom-confidence" onclick="markDone('blossom','confidence',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--sage-light)">🤝</div>
+            <div class="mod-info"><div class="mod-title">Bicara dengan Orang Tua</div><div class="mod-sub">Membuka percakapan</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Membicarakan pubertas dengan orang tua mungkin terasa awkward, tapi ini sangat penting. Mereka sudah melewati hal yang sama!</p>
+              <h4>Tips memulai percakapan:</h4>
+              <p>• Pilih waktu yang tepat — saat kalian berdua santai<br>• Mulai dengan pertanyaan ringan: "Mama dulu juga merasakan...?"<br>• Minta mereka membaca artikel atau buku bersama<br>• Tulis surat jika sulit bicara langsung</p>
+              <h4>Topik yang bisa dibicarakan:</h4>
+              <p>• Kapan menstruasi pertamamu dimulai, Mama?<br>• Bagaimana cara menggunakan pembalut?<br>• Apa yang harus aku lakukan saat nyeri haid?<br>• Boleh aku beli bra baru?</p>
+              <div class="tip"><p>💡 Untuk orang tua: anak perempuan butuh informasi yang akurat dan tanpa penghakiman. Jadilah "safe space" bagi mereka untuk bertanya.</p></div>
+              <button class="btn-complete" id="bc-blossom-talk" onclick="markDone('blossom','talk',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card">
+          <div class="mod-head" onclick="toggleMod(this)">
+            <div class="mod-ico" style="background:var(--peach-light)">🧘</div>
+            <div class="mod-info"><div class="mod-title">Kesehatan Mental Remaja</div><div class="mod-sub">Mengenali dan merawat diri</div></div>
+            <div class="mod-arr">›</div>
+          </div>
+          <div class="mod-body">
+            <div class="mod-inner">
+              <p>Masa pubertas tidak hanya mengubah tubuh, tapi juga cara kamu berpikir dan merasakan dunia. Ini adalah saat yang penting untuk mulai merawat kesehatan mentalmu.</p>
+              <h4>Tanda kesehatan mental yang baik:</h4>
+              <p>• Mampu mengelola emosi (meski tidak sempurna)<br>• Punya seseorang yang bisa diajak bicara<br>• Bisa menikmati aktivitas yang disukai<br>• Merasa cukup aman dan diterima</p>
+              <h4>Kapan harus mencari bantuan?</h4>
+              <p>Segera bicarakan ke orang dewasa yang dipercaya jika kamu merasa sangat sedih lebih dari 2 minggu, tidak bisa tidur, atau tidak nafsu makan secara terus-menerus.</p>
+              <div class="tip"><p>💡 Meminta bantuan adalah tanda keberanian, bukan kelemahan. Kamu berhak merasa baik-baik saja!</p></div>
+              <button class="btn-complete" id="bc-blossom-mental" onclick="markDone('blossom','mental',this)">✓ Selesai Baca</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="edu-sec" id="edu-faq">
+        <div class="faq-search">
+          <span style="font-size:0.9rem;">🔍</span>
+          <input type="text" id="faq-q-input" placeholder="Cari pertanyaan..." oninput="renderFaq()"/>
+        </div>
+        <div id="faq-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACKER PAGE -->
+  <div class="page" id="page-tracker">
+    <div class="pg">
+      <div class="sec-title">📅 Bloom Diary</div>
+
+      <!-- Calendar -->
+      <div class="tr-card">
+        <div class="tr-title">🗓️ Kalender Siklus</div>
+        <div class="cal-head">
+          <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+          <div class="cal-month" id="cal-label"></div>
+          <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--rose)"></div>Hari ini</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--rose-light);border:1px solid var(--rose)"></div>Menstruasi</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--sage-light);border:1px solid var(--sage)"></div>Masa subur</div>
+          <div class="leg-item"><div class="leg-dot" style="border:1.5px dashed var(--rose)"></div>Prediksi haid</div>
+        </div>
+      </div>
+
+      <!-- Period Input -->
+      <div class="tr-card">
+        <div class="tr-title">🩸 Catat Siklus Menstruasi</div>
+        <div class="period-form">
+          <label>Tanggal Mulai Menstruasi</label>
+          <input type="date" id="p-start"/>
+          <label>Tanggal Selesai Menstruasi</label>
+          <input type="date" id="p-end"/>
+          <button class="btn-rose" style="margin-top:0" onclick="savePeriod()">💾 Simpan Siklus</button>
+        </div>
+        <div class="cycle-result" id="cycle-result"></div>
+        <div class="period-hist" id="period-hist"></div>
+      </div>
+
+      <!-- Mood History -->
+      <div class="tr-card">
+        <div class="tr-title">🌸 Riwayat Mood</div>
+        <div class="mood-hist" id="mood-hist">
+          <div class="empty-state">Belum ada catatan mood.<br>Pilih perasaanmu di halaman Home!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div class="page" id="page-profile">
+    <div class="pg">
+      <div class="prof-header">
+        <div class="prof-av" id="prof-av">B</div>
+        <div class="prof-name" id="prof-name">Bunga</div>
+        <div class="prof-age" id="prof-age">Usia: — tahun</div>
+        <div class="prof-email" id="prof-email"></div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="prof-sec">
+        <div class="prof-row" onclick="openModal('edit-prof')">
+          <div class="prof-row-ico">✏️</div>
+          <div class="prof-row-lbl">Edit Profil</div>
+          <div class="prof-row-arr">›</div>
+        </div>
+        <div class="prof-row" onclick="openModal('pc-setup')">
+          <div class="prof-row-ico">🔒</div>
+          <div class="prof-row-lbl">Atur Passcode</div>
+          <div class="prof-row-arr">›</div>
+        </div>
+        <div class="prof-row" onclick="exportData()">
+          <div class="prof-row-ico">📤</div>
+          <div class="prof-row-lbl">Export Data Siklus</div>
+          <div class="prof-row-arr">›</div>
+        </div>
+        <div class="prof-row" onclick="openModal('about')">
+          <div class="prof-row-ico">ℹ️</div>
+          <div class="prof-row-lbl">Tentang BLOOMY</div>
+          <div class="prof-row-arr">›</div>
+        </div>
+      </div>
+
+      <button class="btn-outline" onclick="doLogout()">Keluar Akun 🚪</button>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchPage('home')"><div class="nav-ico">🏠</div><div class="nav-lbl">Home</div></button>
+    <button class="nav-btn" onclick="switchPage('education')"><div class="nav-ico">📖</div><div class="nav-lbl">Edukasi</div></button>
+    <button class="nav-btn" onclick="switchPage('tracker')"><div class="nav-ico">📅</div><div class="nav-lbl">Tracker</div></button>
+    <button class="nav-btn" onclick="switchPage('profile')"><div class="nav-ico">👤</div><div class="nav-lbl">Profil</div></button>
+  </nav>
+</div><!-- end screen-app -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- Edit Profile -->
+<div class="modal-ov" id="modal-edit-prof" onclick="if(event.target===this)closeModal('edit-prof')">
+  <div class="modal-sh">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('edit-prof')">✕</button>
+    <div class="modal-title">✏️ Edit Profil</div>
+    <div class="form-group">
+      <label class="form-label">Nama Panggilan</label>
+      <input class="form-input" type="text" id="ep-name" placeholder="Nama panggilanmu"/>
+      <div class="form-err" id="ep-name-err">Nama wajib diisi</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Umur</label>
+      <input class="form-input" type="number" id="ep-age" placeholder="Umurmu" min="9" max="18"/>
+      <div class="form-err" id="ep-age-err">Umur harus 9–18 tahun</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password Baru (kosongkan jika tidak ingin diubah)</label>
+      <input class="form-input" type="password" id="ep-pass" placeholder="Password baru minimal 6 karakter"/>
+      <div class="form-err" id="ep-pass-err">Password minimal 6 karakter</div>
+    </div>
+    <button class="btn-rose" onclick="saveProfile()">💾 Simpan Perubahan</button>
+  </div>
+</div>
+
+<!-- Passcode Setup -->
+<div class="modal-ov" id="modal-pc-setup" onclick="if(event.target===this)closeModal('pc-setup')">
+  <div class="modal-sh">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('pc-setup')">✕</button>
+    <div class="modal-title">🔒 Atur Passcode</div>
+    <p style="font-size:0.82rem;color:var(--text-mid);margin-bottom:1.1rem;line-height:1.55;">Passcode 4 digit untuk melindungi data pribadimu. Aktif saat aplikasi dibuka kembali.</p>
+    <div class="form-group">
+      <label class="form-label">Passcode Baru (4 digit angka)</label>
+      <input class="form-input" type="password" id="pc-new" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*"/>
+      <div class="form-err" id="pc-new-err">Harus tepat 4 digit angka</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Konfirmasi Passcode</label>
+      <input class="form-input" type="password" id="pc-confirm" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*"/>
+      <div class="form-err" id="pc-confirm-err">Passcode tidak cocok</div>
+    </div>
+    <button class="btn-sage" onclick="savePasscode()">🔐 Simpan Passcode</button>
+    <button class="btn-ghost" onclick="removePasscode()">Hapus Passcode</button>
+  </div>
+</div>
+
+<!-- About -->
+<div class="modal-ov" id="modal-about" onclick="if(event.target===this)closeModal('about')">
+  <div class="modal-sh">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('about')">✕</button>
+    <div class="modal-title">🌸 Tentang BLOOMY</div>
+    <div style="font-size:0.855rem;color:var(--text-mid);line-height:1.72;">
+      <p style="margin-bottom:0.8rem;"><strong style="color:var(--rose-deeper);">BLOOMY</strong> adalah aplikasi edukasi pubertas untuk remaja perempuan usia 9–15 tahun.</p>
+      <p style="margin-bottom:0.8rem;">Tujuan kami: memberikan pemahaman yang komprehensif, hangat, dan bebas stigma tentang perubahan fisik, hormonal, dan emosional selama masa pubertas.</p>
+      <p style="margin-bottom:0.8rem;"><strong style="color:var(--text-dark);">Fitur:</strong><br>🌱 Bloom Journey — modul edukasi lengkap<br>📅 Bloom Diary — tracker siklus &amp; mood<br>🌼 Petal Wisdom — afirmasi harian<br>💬 FAQ — pertanyaan umum<br>🔒 Passcode Lock — privasi data<br>📤 Export Data — untuk konsultasi dokter</p>
+      <p style="margin-bottom:0.8rem;font-size:0.78rem;"><em>Semua data tersimpan lokal di perangkatmu dan tidak dikirim ke server manapun.</em></p>
+      <p style="color:var(--rose-deeper);font-family:'Playfair Display',serif;font-size:1rem;margin-top:1rem;text-align:center;">"Tumbuh itu indah. Kamu tidak sendirian." 🌸</p>
+      <p style="font-size:0.73rem;color:var(--text-faint);text-align:center;margin-top:0.5rem;">BLOOMY v1.0 — PWA</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// UTILS
+// =========================================================
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+n);
+  if(el)el.classList.add('active');
+}
+function showToast(msg,dur=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+function openModal(id){
+  const m=document.getElementById('modal-'+id);
+  if(!m)return;
+  m.classList.add('open');
+  if(id==='edit-prof')prefillEdit();
+}
+function closeModal(id){
+  const m=document.getElementById('modal-'+id);
+  if(m)m.classList.remove('open');
+}
+function simpleHash(s){
+  let h=5381;
+  for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i)|0;
+  return(h>>>0).toString(36);
+}
+function fmtDate(s){
+  const d=new Date(s+'T00:00:00');
+  return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+
+// =========================================================
+// STORAGE HELPERS
+// =========================================================
+function getUsers(){return JSON.parse(localStorage.getItem('bloomy_users')||'[]');}
+function saveUsers(u){localStorage.setItem('bloomy_users',JSON.stringify(u));}
+function getSession(){return JSON.parse(localStorage.getItem('bloomy_session')||'null');}
+function saveSession(s){localStorage.setItem('bloomy_session',JSON.stringify(s));}
+function clearSession(){localStorage.removeItem('bloomy_session');}
+function uKey(k){return 'bloomy_'+window.CU.email+'_'+k;}
+function getPeriods(){return JSON.parse(localStorage.getItem(uKey('periods'))||'[]');}
+function setPeriods(v){localStorage.setItem(uKey('periods'),JSON.stringify(v));}
+function getMoods(){return JSON.parse(localStorage.getItem(uKey('moods'))||'[]');}
+function setMoods(v){localStorage.setItem(uKey('moods'),JSON.stringify(v));}
+function getDone(){return JSON.parse(localStorage.getItem(uKey('done'))||'{}');}
+function setDone(v){localStorage.setItem(uKey('done'),JSON.stringify(v));}
+
+// =========================================================
+// AUTH
+// =========================================================
+function doRegister(){
+  const name=document.getElementById('rg-name').value.trim();
+  const email=document.getElementById('rg-email').value.trim().toLowerCase();
+  const age=parseInt(document.getElementById('rg-age').value);
+  const pass=document.getElementById('rg-pass').value;
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const ok=(id,cond)=>{
+    const el=document.getElementById(id);
+    el.classList.toggle('show',!cond);
+    return cond;
+  };
+  const users=getUsers();
+  const emailOk=emailRe.test(email)&&!users.find(u=>u.email===email);
+  const v=[
+    ok('rg-name-err',name.length>0),
+    ok('rg-email-err',emailOk),
+    ok('rg-age-err',!isNaN(age)&&age>=9&&age<=18),
+    ok('rg-pass-err',pass.length>=6)
+  ];
+  if(v.includes(false))return;
+  users.push({name,email,age,password:simpleHash(pass)});
+  saveUsers(users);
+  showToast('Akun berhasil dibuat! Silakan masuk 🌸');
+  showScreen('login');
+}
+
+function doLogin(){
+  const email=document.getElementById('li-email').value.trim().toLowerCase();
+  const pass=document.getElementById('li-pass').value;
+  const remember=document.getElementById('li-remember').checked;
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  document.getElementById('li-email-err').classList.toggle('show',!emailRe.test(email));
+  document.getElementById('li-pass-err').classList.toggle('show',pass.length<6);
+  document.getElementById('li-general-err').classList.remove('show');
+  if(!emailRe.test(email)||pass.length<6)return;
+  const user=getUsers().find(u=>u.email===email&&u.password===simpleHash(pass));
+  if(!user){document.getElementById('li-general-err').classList.add('show');return;}
+  saveSession({email:user.email,name:user.name,remember});
+  enterApp(user.email);
+}
+
+function doLogout(){
+  clearSession();
+  window.CU=null;
+  document.getElementById('li-email').value='';
+  document.getElementById('li-pass').value='';
+  showScreen('login');
+  showToast('Sampai jumpa! 👋');
+}
+
+function enterApp(email){
+  const users=getUsers();
+  const user=users.find(u=>u.email===email);
+  if(!user){showScreen('login');return;}
+  window.CU=user;
+  const pc=localStorage.getItem('bloomy_pc_'+email);
+  if(pc){
+    pcBuf='';updatePcDots();
+    document.getElementById('pc-error').textContent='';
+    showScreen('passcode');
+  }else{
+    loadApp();
+  }
+}
+
+// =========================================================
+// PASSCODE
+// =========================================================
+let pcBuf='';
+function pcIn(d){
+  if(pcBuf.length>=4)return;
+  pcBuf+=d;updatePcDots();
+  if(pcBuf.length===4)setTimeout(checkPc,160);
+}
+function pcDel(){
+  pcBuf=pcBuf.slice(0,-1);updatePcDots();
+  document.getElementById('pc-error').textContent='';
+}
+function updatePcDots(){
+  for(let i=0;i<4;i++)document.getElementById('dot-'+i).classList.toggle('filled',i<pcBuf.length);
+}
+function checkPc(){
+  const stored=localStorage.getItem('bloomy_pc_'+window.CU.email);
+  if(pcBuf===stored){loadApp();}
+  else{
+    document.getElementById('pc-error').textContent='Passcode salah. Coba lagi.';
+    pcBuf='';updatePcDots();
+  }
+}
+function savePasscode(){
+  const np=document.getElementById('pc-new').value;
+  const cp=document.getElementById('pc-confirm').value;
+  const ne=document.getElementById('pc-new-err');
+  const ce=document.getElementById('pc-confirm-err');
+  ne.classList.toggle('show',np.length!==4||!/^\d{4}$/.test(np));
+  ce.classList.toggle('show',np!==cp);
+  if(np.length!==4||!/^\d{4}$/.test(np)||np!==cp)return;
+  localStorage.setItem('bloomy_pc_'+window.CU.email,np);
+  document.getElementById('pc-new').value='';
+  document.getElementById('pc-confirm').value='';
+  closeModal('pc-setup');
+  showToast('Passcode berhasil disimpan 🔒');
+}
+function removePasscode(){
+  localStorage.removeItem('bloomy_pc_'+window.CU.email);
+  document.getElementById('pc-new').value='';
+  document.getElementById('pc-confirm').value='';
+  closeModal('pc-setup');
+  showToast('Passcode dihapus');
+}
+
+// =========================================================
+// LOAD APP
+// =========================================================
+function loadApp(){
+  showScreen('app');
+  refreshHeader();
+  renderWisdom();
+  renderProgressBadges();
+  renderCalendar();
+  renderMoodHistory();
+  renderPeriodHistory();
+  renderCycleResult();
+  renderStatsGrid();
+  loadDoneStates();
+  renderFaq();
+  restoreTodayMood();
+  switchPage('home');
+}
+
+// =========================================================
+// HEADER & GREETING
+// =========================================================
+function greeting(){
+  const h=new Date().getHours();
+  if(h<11)return'Selamat pagi';
+  if(h<15)return'Selamat siang';
+  if(h<18)return'Selamat sore';
+  return'Selamat malam';
+}
+function refreshHeader(){
+  const u=window.CU;
+  document.getElementById('hdr-greet').textContent=greeting()+', '+u.name+'!';
+  document.getElementById('hdr-av').textContent=u.name[0].toUpperCase();
+  document.getElementById('banner-name').textContent=u.name;
+  document.getElementById('prof-av').textContent=u.name[0].toUpperCase();
+  document.getElementById('prof-name').textContent=u.name;
+  document.getElementById('prof-age').textContent='Usia: '+u.age+' tahun';
+  document.getElementById('prof-email').textContent=u.email;
+}
+
+// =========================================================
+// PETAL WISDOM
+// =========================================================
+const AFFIRMATIONS=[
+  {text:'"Kamu sedang tumbuh, dan itu luar biasa indah."',author:'BLOOMY'},
+  {text:'"Setiap perubahan adalah langkah menuju versimu yang terbaik."',author:'BLOOMY'},
+  {text:'"Tubuhmu luar biasa. Rawat dan cintai ia sepenuh hati."',author:'BLOOMY'},
+  {text:'"Kamu tidak harus sempurna untuk berharga."',author:'BLOOMY'},
+  {text:'"Tumbuh memang tidak mudah, tapi kamu kuat."',author:'BLOOMY'},
+  {text:'"Jadilah bunga yang mekar dengan caramu sendiri."',author:'BLOOMY'},
+  {text:'"Setiap hari adalah kesempatan baru untuk mencintai dirimu."',author:'BLOOMY'},
+  {text:'"Perasaanmu valid. Kamu layak untuk didengar."',author:'BLOOMY'},
+  {text:'"Slow down. Kamu tidak perlu terburu-buru."',author:'BLOOMY'},
+  {text:'"Jadilah baik pada dirimu sendiri — kamu sedang belajar."',author:'BLOOMY'},
+  {text:'"Satu hari dalam satu waktu. Kamu sudah melakukan yang terbaik."',author:'BLOOMY'},
+  {text:'"Kekuatanmu lebih besar dari ketakutanmu."',author:'BLOOMY'},
+  {text:'"Kamu layak merasa bahagia, aman, dan dicintai."',author:'BLOOMY'},
+  {text:'"Ada keindahan dalam proses bertumbuh."',author:'BLOOMY'},
+];
+function renderWisdom(){
+  const idx=new Date().getDate()%AFFIRMATIONS.length;
+  const a=AFFIRMATIONS[idx];
+  document.getElementById('wisdom-text').textContent=a.text;
+  const days=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const now=new Date();
+  document.getElementById('wisdom-date').textContent=
+    days[now.getDay()]+', '+now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  updateNotifBtn();
+}
+function updateNotifBtn(){
+  const on=localStorage.getItem('bloomy_notif')==='1';
+  document.getElementById('notif-ico').textContent=on?'🔔':'🔕';
+  document.getElementById('notif-lbl').textContent=on?'Pengingat aktif':'Aktifkan pengingat harian';
+  document.getElementById('notif-btn').classList.toggle('active',on);
+}
+function toggleNotif(){
+  if(!('Notification' in window)){showToast('Browser tidak mendukung notifikasi');return;}
+  const on=localStorage.getItem('bloomy_notif')==='1';
+  if(!on){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){
+        localStorage.setItem('bloomy_notif','1');
+        new Notification('🌸 BLOOMY',{body:'Pengingat afirmasi harian aktif! Semangat tumbuh ya 🌷',icon:''});
+        updateNotifBtn();
+        showToast('Pengingat harian diaktifkan 🔔');
+      }else{showToast('Izin notifikasi ditolak');}
+    });
+  }else{
+    localStorage.removeItem('bloomy_notif');
+    updateNotifBtn();
+    showToast('Pengingat dinonaktifkan');
+  }
+}
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const pg=document.getElementById('page-'+name);
+  if(pg)pg.classList.add('active');
+  const idx={home:0,education:1,tracker:2,profile:3}[name];
+  if(idx!==undefined)document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  if(name==='tracker'){renderCalendar();renderMoodHistory();renderPeriodHistory();renderCycleResult();}
+  if(name==='profile'){renderStatsGrid();}
+}
+
+// =========================================================
+// EDUCATION
+// =========================================================
+function switchEduTab(tab){
+  document.querySelectorAll('.edu-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.edu-sec').forEach(s=>s.classList.remove('active'));
+  const idx={roots:0,stem:1,blossom:2,faq:3}[tab];
+  if(idx!==undefined)document.querySelectorAll('.edu-tab')[idx].classList.add('active');
+  const sec=document.getElementById('edu-'+tab);
+  if(sec)sec.classList.add('active');
+}
+function toggleMod(head){
+  const body=head.nextElementSibling;
+  const isOpen=body.classList.contains('open');
+  // close all others in same section
+  head.closest('.edu-sec').querySelectorAll('.mod-body.open').forEach(b=>{
+    b.classList.remove('open');
+    b.previousElementSibling.querySelector('.mod-arr').style.transform='rotate(0)';
+  });
+  if(!isOpen){
+    body.classList.add('open');
+    head.querySelector('.mod-arr').style.transform='rotate(90deg)';
+  }
+}
+
+// MODULE COMPLETION
+function markDone(sec,mod,btn){
+  const done=getDone();
+  if(!done[sec])done[sec]={};
+  done[sec][mod]=true;
+  setDone(done);
+  btn.textContent='✓ Sudah Dibaca!';
+  btn.disabled=true;
+  showToast('Hebat! Modul selesai 🌸');
+  celebrateBloom();
+  renderProgressBadges();
+}
+function loadDoneStates(){
+  const done=getDone();
+  const mods={
+    roots:['estrogen','progesteron','fsh'],
+    stem:['perubahan','kebersihan','bra','sanitasi'],
+    blossom:['mood','confidence','talk','mental']
+  };
+  Object.keys(mods).forEach(sec=>{
+    mods[sec].forEach(mod=>{
+      const btn=document.getElementById('bc-'+sec+'-'+mod);
+      if(btn&&done[sec]&&done[sec][mod]){btn.textContent='✓ Sudah Dibaca!';btn.disabled=true;}
+    });
+  });
+}
+function renderProgressBadges(){
+  const done=getDone();
+  const secs={roots:'The Roots',stem:'The Stem',blossom:'The Blossom'};
+  const keys=Object.keys(secs);
+  let completed=0;
+  let html='';
+  keys.forEach(k=>{
+    const isDone=done[k]&&Object.keys(done[k]).length>0;
+    if(isDone)completed++;
+    const cls=isDone?'badge-rose':'badge-lav';
+    html+=`<span class="badge ${cls}">${isDone?'✓':'○'} ${secs[k]}</span>`;
+  });
+  const fill=Math.round((completed/keys.length)*100);
+  const pb=document.getElementById('prog-badges');
+  const pf=document.getElementById('prog-fill');
+  const pl=document.getElementById('prog-lbl');
+  if(pb)pb.innerHTML=html;
+  if(pf)pf.style.width=fill+'%';
+  if(pl)pl.textContent=completed+' dari '+keys.length+' bagian dipelajari';
+}
+function celebrateBloom(){
+  const c=document.getElementById('celebrate');
+  c.innerHTML='';
+  const emojis=['🌸','🌷','🌼','🌺','🌻','✨'];
+  for(let i=0;i<14;i++){
+    const el=document.createElement('div');
+    el.className='bloom-petal';
+    el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left=Math.random()*100+'vw';
+    el.style.animationDelay=Math.random()*0.6+'s';
+    el.style.fontSize=(0.9+Math.random()*0.8)+'rem';
+    c.appendChild(el);
+  }
+  setTimeout(()=>c.innerHTML='',2000);
+}
+
+// =========================================================
+// FAQ
+// =========================================================
+const FAQS=[
+  {q:'Kenapa muncul jerawat?',a:'Saat pubertas, kelenjar minyak menjadi lebih aktif akibat peningkatan hormon androgen. Produksi minyak berlebih menyebabkan pori-pori tersumbat dan jerawat. Cuci muka 2x sehari dengan cleanser lembut, hindari memencet jerawat, dan minum banyak air putih.'},
+  {q:'Apakah nyeri haid itu normal?',a:'Ya! Nyeri haid (dismenore) dialami oleh lebih dari 80% perempuan. Disebabkan oleh kontraksi rahim. Atasi dengan kompres hangat, olahraga ringan, minum air hangat, atau parasetamol. Konsultasikan ke dokter jika nyeri sangat parah atau tidak bisa beraktivitas.'},
+  {q:'Berapa lama menstruasi berlangsung?',a:'Durasi menstruasi normal adalah 3–7 hari. Siklus (hari pertama haid ke hari pertama berikutnya) biasanya 21–35 hari. Di tahun-tahun pertama, siklus mungkin belum teratur — ini normal!'},
+  {q:'Apa itu menarche?',a:'Menarche adalah menstruasi pertama pada remaja perempuan. Biasanya terjadi antara usia 10–15 tahun. Ini menandai kematangan reproduksi. Aliran pertama bisa sangat sedikit, berwarna cokelat, merah muda, atau merah — semua normal.'},
+  {q:'Apa itu keputihan dan apakah normal?',a:'Keputihan adalah cairan yang keluar dari vagina, biasanya bening hingga putih susu dan tidak berbau. Ini cara vagina membersihkan dirinya sendiri dan mulai muncul 6–12 bulan sebelum menstruasi pertama. Segera ke dokter jika berwarna kuning/hijau, berbau tidak sedap, atau disertai gatal.'},
+  {q:'Bolehkah olahraga saat menstruasi?',a:'Boleh, bahkan dianjurkan! Olahraga ringan seperti jalan kaki, yoga, atau renang membantu mengurangi kram dan memperbaiki mood melalui pelepasan endorfin alami. Hindari olahraga sangat intens jika nyeri mengganggu.'},
+  {q:'Kenapa berat badan naik saat pubertas?',a:'Kenaikan berat badan saat pubertas sangat normal dan sehat! Tubuh membutuhkan lebih banyak lemak untuk mendukung perkembangan reproduksi, terutama di area payudara, pinggul, dan paha. Fokuslah pada makan bergizi dan aktif bergerak, bukan angka di timbangan.'},
+  {q:'Kapan harus ke dokter terkait menstruasi?',a:'Segera periksa jika: menstruasi belum datang di usia 15 tahun, siklus sangat tidak teratur setelah 2 tahun, nyeri sangat parah, perdarahan sangat banyak (ganti pembalut setiap <2 jam), atau menstruasi berlangsung lebih dari 7 hari.'},
+  {q:'Apakah normal jika payudara terasa sakit?',a:'Ya! Nyeri atau sensitif di payudara sangat umum selama pubertas dan menjelang menstruasi, disebabkan oleh perubahan hormon. Kenakan bra yang pas untuk mengurangi ketidaknyamanan. Nyeri parah atau ada benjolan perlu diperiksa dokter.'},
+  {q:'Bagaimana cara menghitung siklus menstruasi?',a:'Hitung dari hari PERTAMA menstruasimu hingga hari PERTAMA menstruasi berikutnya. Itulah panjang siklusmu. Contoh: haid mulai 1 Januari dan berikutnya 29 Januari = siklus 28 hari. Catat di Bloom Diary untuk memantau polamu!'},
+  {q:'Apa itu sindrom pramenstruasi (PMS)?',a:'PMS adalah kumpulan gejala fisik dan emosional yang muncul 1–2 minggu sebelum menstruasi: kembung, nyeri payudara, sakit kepala, mood mudah berubah, dan kelelahan. Diatasi dengan olahraga, istirahat cukup, kurangi kafein dan garam.'},
+  {q:'Apakah menstruasi bisa berhenti karena stres?',a:'Ya! Stres berat bisa memengaruhi hormon dan menyebabkan menstruasi terlambat atau bahkan berhenti sementara (amenore fungsional). Ini sinyal tubuhmu membutuhkan istirahat. Jika terlambat lebih dari 3 bulan, konsultasikan ke dokter.'},
+];
+
+function renderFaq(){
+  const q=(document.getElementById('faq-q-input')?.value||'').toLowerCase().trim();
+  const filtered=q?FAQS.filter(f=>f.q.toLowerCase().includes(q)||f.a.toLowerCase().includes(q)):FAQS;
+  const c=document.getElementById('faq-container');
+  if(!c)return;
+  if(filtered.length===0){c.innerHTML='<div class="faq-empty">Tidak ditemukan. Coba kata kunci lain.</div>';return;}
+  c.innerHTML=filtered.map((f,i)=>`
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>${f.q}</span><span>›</span>
+      </div>
+      <div class="faq-a">${f.a}</div>
+    </div>
+  `).join('');
+}
+function toggleFaq(el){
+  const a=el.nextElementSibling;
+  const open=a.classList.contains('open');
+  document.querySelectorAll('.faq-a.open').forEach(x=>x.classList.remove('open'));
+  if(!open)a.classList.add('open');
+}
+
+// =========================================================
+// TRACKER — CALENDAR
+// =========================================================
+let calY=new Date().getFullYear(), calM=new Date().getMonth();
+function calNav(d){
+  calM+=d;
+  if(calM>11){calM=0;calY++;}
+  if(calM<0){calM=11;calY--;}
+  renderCalendar();
+}
+function renderCalendar(){
+  if(!window.CU)return;
+  const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const label=document.getElementById('cal-label');
+  if(label)label.textContent=MONTHS[calM]+' '+calY;
+  const periods=getPeriods();
+  const periodSet=new Set(), fertileSet=new Set(), predictSet=new Set();
+  periods.forEach(p=>{
+    let d=new Date(p.s+'T00:00:00');
+    const e=new Date(p.e+'T00:00:00');
+    while(d<=e){periodSet.add(d.toISOString().split('T')[0]);d.setDate(d.getDate()+1);}
+  });
+  let avgCyc=28;
+  if(periods.length>=2){
+    const diffs=[];
+    for(let i=1;i<periods.length;i++)
+      diffs.push(Math.round((new Date(periods[i].s)-new Date(periods[i-1].s))/(86400000)));
+    avgCyc=Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length);
+  }
+  if(periods.length>0){
+    const last=new Date(periods[periods.length-1].s+'T00:00:00');
+    const nxt=new Date(last);nxt.setDate(nxt.getDate()+avgCyc);
+    for(let i=0;i<6;i++){const d=new Date(nxt);d.setDate(d.getDate()+i);predictSet.add(d.toISOString().split('T')[0]);}
+    const ov=new Date(last);ov.setDate(ov.getDate()+Math.round(avgCyc/2)-2);
+    for(let i=0;i<5;i++){const d=new Date(ov);d.setDate(d.getDate()+i);fertileSet.add(d.toISOString().split('T')[0]);}
+  }
+  const today=new Date();
+  const todayIso=today.toISOString().split('T')[0];
+  const fd=new Date(calY,calM,1).getDay();
+  const dim=new Date(calY,calM+1,0).getDate();
+  const dipm=new Date(calY,calM,0).getDate();
+  const DAYS=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  let html=DAYS.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  for(let i=0;i<fd;i++){
+    html+=`<div class="cal-d cal-other">${dipm-fd+1+i}</div>`;
+  }
+  for(let d=1;d<=dim;d++){
+    const iso=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    let cls='cal-d';
+    if(iso===todayIso)cls+=' cal-today';
+    else if(periodSet.has(iso))cls+=' cal-period';
+    else if(predictSet.has(iso))cls+=' cal-predicted';
+    else if(fertileSet.has(iso))cls+=' cal-fertile';
+    html+=`<div class="${cls}">${d}</div>`;
+  }
+  const rem=(7-((fd+dim)%7))%7;
+  for(let i=1;i<=rem;i++)html+=`<div class="cal-d cal-other">${i}</div>`;
+  const grid=document.getElementById('cal-grid');
+  if(grid)grid.innerHTML=html;
+}
+
+// =========================================================
+// TRACKER — PERIOD
+// =========================================================
+function savePeriod(){
+  const s=document.getElementById('p-start').value;
+  const e=document.getElementById('p-end').value;
+  if(!s||!e){showToast('Isi tanggal mulai dan selesai ya ✨');return;}
+  if(new Date(e)<new Date(s)){showToast('Tanggal selesai harus setelah mulai');return;}
+  const periods=getPeriods();
+  periods.push({s,e});
+  periods.sort((a,b)=>new Date(a.s)-new Date(b.s));
+  setPeriods(periods);
+  document.getElementById('p-start').value='';
+  document.getElementById('p-end').value='';
+  showToast('Siklus berhasil disimpan! 🌸');
+  renderCalendar();
+  renderCycleResult();
+  renderPeriodHistory();
+  renderStatsGrid();
+}
+function deletePeriod(idx){
+  const periods=getPeriods();
+  periods.splice(idx,1);
+  setPeriods(periods);
+  renderCalendar();
+  renderCycleResult();
+  renderPeriodHistory();
+  renderStatsGrid();
+  showToast('Data siklus dihapus');
+}
+function renderPeriodHistory(){
+  if(!window.CU)return;
+  const periods=getPeriods();
+  const c=document.getElementById('period-hist');
+  if(!c)return;
+  if(periods.length===0){c.innerHTML='';return;}
+  const recent=periods.slice().reverse().slice(0,6);
+  c.innerHTML='<div style="font-size:0.78rem;color:var(--text-mid);margin:0.85rem 0 0.5rem;font-weight:500;">Riwayat Siklus:</div>'+
+  recent.map((p,ri)=>{
+    const realIdx=periods.length-1-ri;
+    const dur=Math.round((new Date(p.e)-new Date(p.s))/(86400000))+1;
+    return `<div class="period-row">
+      <div>🩸</div>
+      <div class="period-row-info">
+        <div class="period-row-date">${fmtDate(p.s)} – ${fmtDate(p.e)}</div>
+        <div class="period-row-dur">${dur} hari</div>
+      </div>
+      <button class="btn-del-sm" onclick="deletePeriod(${realIdx})">Hapus</button>
+    </div>`;
+  }).join('');
+}
+function renderCycleResult(){
+  if(!window.CU)return;
+  const periods=getPeriods();
+  const c=document.getElementById('cycle-result');
+  if(!c)return;
+  if(periods.length===0){c.style.display='none';return;}
+  const last=periods[periods.length-1];
+  const dur=Math.round((new Date(last.e)-new Date(last.s))/(86400000))+1;
+  let avgCyc=28;
+  if(periods.length>=2){
+    const diffs=[];
+    for(let i=1;i<periods.length;i++)
+      diffs.push(Math.round((new Date(periods[i].s)-new Date(periods[i-1].s))/(86400000)));
+    avgCyc=Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length);
+  }
+  const nxt=new Date(new Date(last.s+'T00:00:00').getTime()+avgCyc*86400000);
+  const ov=new Date(new Date(last.s+'T00:00:00').getTime()+(Math.round(avgCyc/2)-2)*86400000);
+  c.style.display='block';
+  c.innerHTML=
+    `<strong>Siklus terakhir:</strong> ${fmtDate(last.s)} – ${fmtDate(last.e)} (${dur} hari)<br>`+
+    `<strong>Rata-rata siklus:</strong> ${avgCyc} hari<br>`+
+    `<strong>Prediksi haid berikutnya:</strong> ${fmtDate(nxt.toISOString().split('T')[0])}<br>`+
+    `<strong>Prediksi masa subur:</strong> sekitar ${fmtDate(ov.toISOString().split('T')[0])}`;
+}
+
+// =========================================================
+// MOOD
+// =========================================================
+function pickMood(el,emoji,label){
+  document.querySelectorAll('.mood-opt').forEach(m=>m.classList.remove('selected'));
+  el.classList.add('selected');
+  const today=todayStr();
+  const moods=getMoods();
+  const idx=moods.findIndex(m=>m.d===today);
+  const entry={d:today,e:emoji,l:label};
+  if(idx>=0)moods[idx]=entry;else moods.unshift(entry);
+  setMoods(moods);
+  showToast('Mood hari ini dicatat! '+emoji);
+  renderMoodHistory();
+  renderStatsGrid();
+}
+function restoreTodayMood(){
+  if(!window.CU)return;
+  const today=todayStr();
+  const m=getMoods().find(m=>m.d===today);
+  if(!m)return;
+  document.querySelectorAll('.mood-opt').forEach(el=>{
+    if(el.querySelector('.mood-emo')?.textContent===m.e)el.classList.add('selected');
+  });
+}
+function renderMoodHistory(){
+  if(!window.CU)return;
+  const moods=getMoods();
+  const c=document.getElementById('mood-hist');
+  if(!c)return;
+  if(moods.length===0){
+    c.innerHTML='<div class="empty-state">Belum ada catatan mood.<br>Pilih perasaanmu di halaman Home!</div>';
+    return;
+  }
+  c.innerHTML=moods.slice(0,20).map(m=>`
+    <div class="mood-log">
+      <div class="mood-log-emo">${m.e}</div>
+      <div style="flex:1">
+        <div class="mood-log-lbl">${m.l}</div>
+        <div class="mood-log-date">${fmtDate(m.d)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =========================================================
+// PROFILE
+// =========================================================
+function renderStatsGrid(){
+  if(!window.CU)return;
+  const periods=getPeriods();
+  const moods=getMoods();
+  const done=getDone();
+  const mods=Object.values(done).reduce((s,sec)=>s+Object.keys(sec).length,0);
+  const c=document.getElementById('stats-grid');
+  if(!c)return;
+  c.innerHTML=[
+    {n:periods.length,l:'Siklus Dicatat',bg:'var(--rose-light)',cl:'var(--rose-deeper)'},
+    {n:moods.length,l:'Mood Dicatat',bg:'var(--lavender-light)',cl:'var(--lavender-deeper)'},
+    {n:mods,l:'Modul Selesai',bg:'var(--sage-light)',cl:'var(--sage-deeper)'},
+    {n:Object.keys(done).length,l:'Topik Dipelajari',bg:'var(--peach-light)',cl:'#b07030'},
+  ].map(s=>`
+    <div class="stat-card" style="background:${s.bg}">
+      <div class="stat-num" style="color:${s.cl}">${s.n}</div>
+      <div class="stat-lbl">${s.l}</div>
+    </div>
+  `).join('');
+}
+function prefillEdit(){
+  const u=window.CU;
+  if(!u)return;
+  document.getElementById('ep-name').value=u.name;
+  document.getElementById('ep-age').value=u.age;
+  document.getElementById('ep-pass').value='';
+  ['ep-name-err','ep-age-err','ep-pass-err'].forEach(id=>document.getElementById(id).classList.remove('show'));
+}
+function saveProfile(){
+  const name=document.getElementById('ep-name').value.trim();
+  const age=parseInt(document.getElementById('ep-age').value);
+  const pass=document.getElementById('ep-pass').value;
+  const ne=document.getElementById('ep-name-err');
+  const ae=document.getElementById('ep-age-err');
+  const pe=document.getElementById('ep-pass-err');
+  ne.classList.toggle('show',!name);
+  ae.classList.toggle('show',isNaN(age)||age<9||age>18);
+  pe.classList.toggle('show',pass.length>0&&pass.length<6);
+  if(!name||isNaN(age)||age<9||age>18)return;
+  if(pass.length>0&&pass.length<6)return;
+  const users=getUsers();
+  const idx=users.findIndex(u=>u.email===window.CU.email);
+  if(idx<0)return;
+  users[idx].name=name;
+  users[idx].age=age;
+  if(pass.length>=6)users[idx].password=simpleHash(pass);
+  saveUsers(users);
+  window.CU=users[idx];
+  saveSession({email:window.CU.email,name:window.CU.name,remember:true});
+  closeModal('edit-prof');
+  refreshHeader();
+  renderStatsGrid();
+  showToast('Profil berhasil diperbarui 🌸');
+}
+
+// =========================================================
+// EXPORT
+// =========================================================
+function exportData(){
+  const u=window.CU;
+  const periods=getPeriods();
+  const moods=getMoods();
+  const done=getDone();
+  const secs={roots:'The Roots (Hormon)',stem:'The Stem (Fisik)',blossom:'The Blossom (Emosi)'};
+  let t='BLOOMY — Laporan Data Pribadi\n';
+  t+='='.repeat(36)+'\n';
+  t+=`Nama: ${u.name}\nUmur: ${u.age} tahun\nEmail: ${u.email}\n`;
+  t+=`Dicetak: ${new Date().toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}\n\n`;
+  t+='RIWAYAT SIKLUS MENSTRUASI\n'+'-'.repeat(30)+'\n';
+  if(!periods.length){t+='Belum ada data siklus.\n';}
+  else periods.forEach((p,i)=>{
+    const dur=Math.round((new Date(p.e)-new Date(p.s))/(86400000))+1;
+    t+=`${i+1}. ${fmtDate(p.s)} – ${fmtDate(p.e)} (${dur} hari)\n`;
+  });
+  t+='\nRIWAYAT MOOD (20 terakhir)\n'+'-'.repeat(30)+'\n';
+  if(!moods.length){t+='Belum ada data mood.\n';}
+  else moods.slice(0,20).forEach(m=>t+=`${fmtDate(m.d)}: ${m.e} ${m.l}\n`);
+  t+='\nMODUL EDUKASI\n'+'-'.repeat(30)+'\n';
+  Object.keys(secs).forEach(k=>{
+    const n=done[k]?Object.keys(done[k]).length:0;
+    t+=`${secs[k]}: ${n>0?`${n} submodul selesai`:'Belum dipelajari'}\n`;
+  });
+  t+='\n'+'='.repeat(36)+'\n';
+  t+='Digenerate oleh BLOOMY App.\n';
+  t+='Konsultasikan dengan dokter atau orang tua untuk informasi medis.\n';
+  const blob=new Blob([t],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='BLOOMY_'+u.name.replace(/\s+/g,'_')+'_'+todayStr()+'.txt';
+  a.click();URL.revokeObjectURL(url);
+  showToast('Data berhasil diexport! 📤');
+}
+
+// =========================================================
+// SET MAX DATE FOR PERIOD INPUTS
+// =========================================================
+const _today=todayStr();
+const ps=document.getElementById('p-start');
+const pe=document.getElementById('p-end');
+if(ps)ps.max=_today;
+if(pe)pe.max=_today;
+
+// =========================================================
+// INIT
+// =========================================================
+window.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    const ls=document.getElementById('loading-screen');
+    ls.style.opacity='0';
+    setTimeout(()=>ls.style.display='none',600);
+    const session=getSession();
+    if(session){
+      const user=getUsers().find(u=>u.email===session.email);
+      if(user){window.CU=user;enterApp(user.email);}
+      else showScreen('login');
+    }else{
+      showScreen('login');
+    }
+  },1800);
+});
+
+// =========================================================
+// SERVICE WORKER (inline via blob)
+// =========================================================
+if('serviceWorker' in navigator){
+  const swCode=`
+const CACHE='bloomy-v1';
+const ASSETS=['/'];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/'))));
+});
+  `;
+  const swBlob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
 </body>
-
 </html>

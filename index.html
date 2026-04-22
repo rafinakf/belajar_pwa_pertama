@@ -10,7 +10,8 @@
   <meta name="description" content="BLOOMY - Aplikasi edukasi pubertas untuk remaja perempuan"/>
   <title>BLOOMY - Tumbuh Bersama</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icons/bloomy-new.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
@@ -1750,27 +1751,18 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 // =========================================================
-// SERVICE WORKER (inline via blob)
+// SERVICE WORKER REGISTRATION
 // =========================================================
 if('serviceWorker' in navigator){
-  const swCode=`
-const CACHE='bloomy-v1';
-const ASSETS=['/'];
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/'))));
-});
-  `;
-  const swBlob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./service-worker.js', {scope: './'})
+      .then(function(reg){
+        console.log('Service Worker registered, scope:', reg.scope);
+      })
+      .catch(function(err){
+        console.log('Service Worker registration failed:', err);
+      });
+  });
 }
 </script>
 </body>

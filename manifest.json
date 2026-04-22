@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "PWA Template Responsif",
-  "short_name": "PWA Demo",
-  "description": "Aplikasi PWA responsif untuk demonstrasi template dasar Progressive Web App dengan dukungan offline dan installable.",
+  "name": "BLOOMY",
+  "short_name": "BLOOMY",
+  "description": "Aplikasi edukasi pubertas interaktif untuk remaja perempuan.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

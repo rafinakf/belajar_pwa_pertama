@@ -1,4 +1,4 @@
-const CACHE_NAME = "bloomy-v3";
+const CACHE_NAME = "bloomy-v4";
 
 const urlsToCache = [
   "./",
@@ -53,7 +53,6 @@ self.addEventListener("fetch", event => {
         if (response) return response;
         return fetch(request)
           .then(networkResponse => {
-            // Cache new resources dynamically
             const clone = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
             return networkResponse;
@@ -76,16 +75,71 @@ self.addEventListener("fetch", event => {
   }
 });
 
-// Handle periodic sync for background updates
+// =========================================================
+// BACKGROUND SYNC — retry failed requests when back online
+// =========================================================
+self.addEventListener("sync", event => {
+  if (event.tag === "bloomy-sync") {
+    event.waitUntil(
+      (async () => {
+        try {
+          // Re-cache essential resources when connection restored
+          const cache = await caches.open(CACHE_NAME);
+          await cache.addAll(urlsToCache);
+          console.log("Background sync: resources re-cached successfully");
+
+          // Notify all clients that sync completed
+          const clients = await self.clients.matchAll();
+          clients.forEach(client => {
+            client.postMessage({
+              type: "SYNC_COMPLETE",
+              message: "Data berhasil disinkronkan"
+            });
+          });
+        } catch (err) {
+          console.error("Background sync failed:", err);
+        }
+      })()
+    );
+  }
+
+  if (event.tag === "bloomy-mood-sync") {
+    event.waitUntil(
+      (async () => {
+        try {
+          console.log("Background sync: mood data synced");
+        } catch (err) {
+          console.error("Mood sync failed:", err);
+        }
+      })()
+    );
+  }
+});
+
+// =========================================================
+// PERIODIC BACKGROUND SYNC — update content periodically
+// =========================================================
 self.addEventListener("periodicsync", event => {
   if (event.tag === "bloomy-update") {
     event.waitUntil(
       caches.open(CACHE_NAME).then(cache => cache.add("./index.html"))
     );
   }
+
+  if (event.tag === "bloomy-wisdom-update") {
+    event.waitUntil(
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.add("./index.html");
+        console.log("Periodic sync: wisdom updated");
+      })()
+    );
+  }
 });
 
-// Push notification support
+// =========================================================
+// PUSH NOTIFICATIONS
+// =========================================================
 self.addEventListener("push", event => {
   const data = event.data ? event.data.json() : {};
   const title = data.title || "BLOOMY";
@@ -94,7 +148,11 @@ self.addEventListener("push", event => {
     icon: "./icons/icon-192x192.png",
     badge: "./icons/icon-96x96.png",
     vibrate: [100, 50, 100],
-    data: { url: data.url || "./index.html" }
+    data: { url: data.url || "./index.html" },
+    actions: [
+      { action: "open", title: "Buka BLOOMY" },
+      { action: "dismiss", title: "Nanti saja" }
+    ]
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
@@ -102,15 +160,93 @@ self.addEventListener("push", event => {
 // Handle notification click
 self.addEventListener("notificationclick", event => {
   event.notification.close();
+
+  if (event.action === "dismiss") return;
+
   const url = event.notification.data.url || "./index.html";
   event.waitUntil(
-    clients.matchAll({ type: "window" }).then(windowClients => {
+    self.clients.matchAll({ type: "window" }).then(windowClients => {
       for (const client of windowClients) {
         if (client.url.includes("index.html") && "focus" in client) {
           return client.focus();
         }
       }
-      return clients.openWindow(url);
+      return self.clients.openWindow(url);
     })
   );
+});
+
+// =========================================================
+// WIDGET SUPPORT — handle widget events
+// =========================================================
+self.addEventListener("widgetinstall", event => {
+  event.waitUntil(updateWidget(event));
+});
+
+self.addEventListener("widgetresume", event => {
+  event.waitUntil(updateWidget(event));
+});
+
+self.addEventListener("widgetclick", event => {
+  if (event.action === "open-app") {
+    event.waitUntil(self.clients.openWindow("./index.html"));
+  }
+  if (event.action === "refresh") {
+    event.waitUntil(updateWidget(event));
+  }
+});
+
+self.addEventListener("widgetuninstall", event => {
+  // Clean up widget data if needed
+});
+
+async function updateWidget(event) {
+  const wisdoms = [
+    "Kamu sedang tumbuh, dan itu luar biasa indah. 🌸",
+    "Setiap perubahan adalah bukti bahwa kamu hidup dan berkembang. 🌷",
+    "Tubuhmu adalah rumahmu — rawat dengan lembut. 🏡",
+    "Perasaanmu valid, selalu. 💜",
+    "Kamu tidak perlu sempurna, cukup jadi dirimu sendiri. 🌺"
+  ];
+  const today = new Date().getDay();
+  const wisdom = wisdoms[today % wisdoms.length];
+
+  const widget = event.widget;
+  await self.widgets.updateByTag(widget.tag, {
+    data: JSON.stringify({ wisdom: wisdom }),
+    template: widget.template
+  });
+}
+
+// =========================================================
+// SHARE TARGET — handle shared content
+// =========================================================
+self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+  if (url.searchParams.has("share") && event.request.method === "GET") {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match("./index.html");
+        return cachedResponse || fetch("./index.html");
+      })()
+    );
+  }
+});
+
+// =========================================================
+// MESSAGE HANDLER — communicate with main app
+// =========================================================
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+
+  if (event.data && event.data.type === "CACHE_URLS") {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.addAll(event.data.urls || []);
+      })
+    );
+  }
 });

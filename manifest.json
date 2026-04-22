@@ -7,8 +7,9 @@
   "scope": "./",
   "display": "standalone",
   "display_override": [
+    "window-controls-overlay",
     "standalone",
-    "window-controls-overlay"
+    "tabbed"
   ],
   "background_color": "#fff5f7",
   "theme_color": "#f4a5b0",
@@ -140,6 +141,42 @@
       ]
     }
   ],
+  "share_target": {
+    "action": "./index.html?share=true",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "widgets": [
+    {
+      "name": "Petal Wisdom",
+      "short_name": "Wisdom",
+      "description": "Afirmasi harian dari BLOOMY",
+      "tag": "bloomy-wisdom",
+      "ms_ac_template": "widget/wisdom-template.json",
+      "data": "./index.html",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "icons/screenshot-narrow.png",
+          "sizes": "1080x1920",
+          "label": "Widget Petal Wisdom"
+        }
+      ],
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "note_taking": {
+    "new_note_url": "./index.html?note=new"
+  },
   "related_applications": [],
   "handle_links": "preferred",
   "launch_handler": {
@@ -147,5 +184,16 @@
   },
   "edge_side_panel": {
     "preferred_width": 400
-  }
+  },
+  "scope_extensions": [
+    {
+      "origin": "*.github.io"
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+bloomy",
+      "url": "./index.html?protocol=%s"
+    }
+  ]
 }
